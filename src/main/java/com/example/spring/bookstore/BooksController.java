@@ -59,6 +59,7 @@ public class BooksController {
             log.info("Book with id:{} not found", id);
             // Setting status to 404 and returning nothing
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.addHeader("message", "Book is not found");
             return Optional.empty();
         }
 
@@ -81,12 +82,14 @@ public class BooksController {
             log.info("Book with id:{} not found", id);
             // Setting status to 404
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.addHeader("message", "Book is not found");
         } else {
             log.info("Book with id:{} deleted", id);
             // else deleting the book
             booksRepository.deleteById(id);
             // setting proper response status (or may be I could leave 200)
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            response.addHeader("message", "Book was deleted");
         }
     }
 
@@ -106,7 +109,7 @@ public class BooksController {
             booksRepository.save(book);
             // setting proper status
             response.setStatus(HttpServletResponse.SC_CREATED);
-            // adding response header: message : "Book was created"
+            // adding response header: message
             response.addHeader("message", "Book was created");
         }
     }
