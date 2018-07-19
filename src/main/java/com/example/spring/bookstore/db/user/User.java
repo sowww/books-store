@@ -18,7 +18,6 @@ public class User {
     private String name;
 
     public User() {
-
     }
 
     public User(String name) {
@@ -40,6 +39,11 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public static boolean isUserNameValid(String name) {
+        String validationRegex = "[a-zA-Z]+[a-zA-Z0-9_\\s.]*";
+        return name.matches(validationRegex);
     }
 
 }
