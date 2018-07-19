@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @RestController
@@ -16,11 +17,14 @@ public class BooksController {
     private final BooksRepository booksRepository;
 
     public BooksController(BooksRepository booksRepository) {
+        // getting booksRepository
         this.booksRepository = booksRepository;
-        fillBookRepository();
+        // Filling it with books
+        fillBooksRepository();
     }
 
-    private void fillBookRepository() {
+    // Fills BooksRepository with dummy books
+    private void fillBooksRepository() {
         for (int i = 1; i <= 10; i++) {
 
             String bookName = "Book " + i;
@@ -29,34 +33,82 @@ public class BooksController {
 
             Book book = new Book(bookName, cost, count);
             booksRepository.save(book);
-            log.info("Book name: '{}' cost: {}", bookName, cost);
+            log.info("Book name: '{}' cost: {} count: {}", bookName, cost, count);
         }
     }
 
-    @GetMapping("/")
+    // Getting all books ; GET /api/books
+    @GetMapping(value = {"", "/"})
     public Iterable<Book> getAllBooks() {
         Iterable<Book> books = booksRepository.findAll();
         log.info("Get all books: {}", books.spliterator().getExactSizeIfKnown());
         return books;
     }
 
+    // Getting book by id ; GET /api/books/5
     @GetMapping(value = "/{id}")
-    public Optional<Book> getBookById(@PathVariable Long id) {
-        log.info("Get book by id: {}", id);
-        return booksRepository.findById(id);
+    public Optional<Book> getBookById(@PathVariable Long id,
+                                      HttpServletResponse response) {
+        log.info("Getting book by id: {}", id);
+
+        // Getting book from repo
+        Optional<Book> book = booksRepository.findById(id);
+
+        // If book doesn't exist
+        if (!book.isPresent()) {
+            log.info("Book with id:{} not found", id);
+            // Setting status to 404 and returning nothing
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return Optional.empty();
+        }
+
+        // else returning book
+        return book;
     }
 
+    // Deleting book by id ; DELETE /api/books/5
     @DeleteMapping(value = "/{id}")
-    public void deleteBookById(@PathVariable Long id) {
+    public void deleteBookById(@PathVariable Long id,
+                               HttpServletResponse response) {
         log.info("Delete book by id: {}", id);
-        booksRepository.deleteById(id);
+
+        // Checking if book exists
+        // Getting book from repo
+        Optional<Book> book = booksRepository.findById(id);
+
+        // If book doesn't exist
+        if (!book.isPresent()) {
+            log.info("Book with id:{} not found", id);
+            // Setting status to 404
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        } else {
+            log.info("Book with id:{} deleted", id);
+            // else deleting the book
+            booksRepository.deleteById(id);
+            // setting proper response status (or may be I could leave 200)
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
     }
 
+
+    // Creating new book with params; POST /api/books/Book Name/500/2
     @PostMapping(value = "/{name}/{cost}/{count}")
-    public void addNewBook(@PathVariable String name, @PathVariable float cost, @PathVariable int count) {
+    public void addNewBook(@PathVariable String name,
+                           @PathVariable float cost,
+                           @PathVariable int count,
+                           HttpServletResponse response) {
         log.info("New book: {} {} {}", name, cost, count);
-        Book book = new Book(name, cost, count);
-        booksRepository.save(book);
+        // Checking if name is valid
+        if (Book.isNameValid(name)) {
+            // then creating a new book
+            Book book = new Book(name, cost, count);
+            // save it to repo
+            booksRepository.save(book);
+            // setting proper status
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            // adding response header: message : "Book was created"
+            response.addHeader("message", "Book was created");
+        }
     }
 
 }
