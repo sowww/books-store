@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import java.util.ArrayList;
 
 @Entity
-public class Order {
+public class BooksOrder {
 
     public enum Status {
         PENDING,
@@ -22,10 +22,10 @@ public class Order {
     private ArrayList<Long> bookIds;
     private Status status;
 
-    public Order() {
+    public BooksOrder() {
     }
 
-    public Order(Long userId, float totalPayment, ArrayList<Long> bookIds, Status status) {
+    public BooksOrder(Long userId, float totalPayment, ArrayList<Long> bookIds, Status status) {
         this.userId = userId;
         this.totalPayment = totalPayment;
         this.bookIds = bookIds;
