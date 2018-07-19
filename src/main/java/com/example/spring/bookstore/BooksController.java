@@ -37,7 +37,8 @@ public class BooksController {
         }
     }
 
-    // Getting all books ; GET /api/books
+    // Getting all books
+    // example: GET /api/books
     @GetMapping(value = {"", "/"})
     public Iterable<Book> getAllBooks() {
         Iterable<Book> books = booksRepository.findAll();
@@ -45,7 +46,8 @@ public class BooksController {
         return books;
     }
 
-    // Getting book by id ; GET /api/books/5
+    // Getting book by id
+    // example: GET /api/books/5
     @GetMapping(value = "/{id}")
     public Optional<Book> getBookById(@PathVariable Long id,
                                       HttpServletResponse response) {
@@ -67,7 +69,8 @@ public class BooksController {
         return book;
     }
 
-    // Deleting book by id ; DELETE /api/books/5
+    // Deleting book by id
+    // example: DELETE /api/books/5
     @DeleteMapping(value = "/{id}")
     public void deleteBookById(@PathVariable Long id,
                                HttpServletResponse response) {
@@ -93,12 +96,12 @@ public class BooksController {
         }
     }
 
-
-    // Creating new book with params; POST /api/books/Book Name/500/2
-    @PostMapping(value = "/{name}/{cost}/{count}")
-    public void addNewBook(@PathVariable String name,
-                           @PathVariable float cost,
-                           @PathVariable int count,
+    // Creating new book with params
+    // example: POST /api/books?name=Hello world&cost=150.5&count=3
+    @PostMapping(value = "")
+    public void addNewBook(@RequestParam String name,
+                           @RequestParam float cost,
+                           @RequestParam int count,
                            HttpServletResponse response) {
         log.info("New book: {} {} {}", name, cost, count);
         // Checking if name is valid
