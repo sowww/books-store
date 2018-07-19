@@ -48,7 +48,8 @@ public class UsersController {
         }
     }
 
-    // Getting all users; GET /api/users
+    // Getting all users
+    // example: GET /api/users
     @GetMapping(value = {"/", ""})
     public Iterable<User> getAllUsers(HttpServletResponse response) {
         // Get all users from repo
@@ -66,7 +67,8 @@ public class UsersController {
         }
     }
 
-    // Getting user by id ; GET /api/users/1
+    // Getting user by id
+    // example: GET /api/users/1
     @GetMapping("/{id}")
     public Optional<User> getUserById(@PathVariable Long id,
                                       HttpServletResponse response) {
