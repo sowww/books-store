@@ -1,7 +1,7 @@
 package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.user.User;
-import com.example.spring.bookstore.db.user.UserRepository;
+import com.example.spring.bookstore.db.user.UsersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,14 +13,14 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/user")
-public class UserController {
+@RequestMapping("/api/users")
+public class UsersController {
 
-    private final Logger log = LoggerFactory.getLogger(UserController.class);
-    private final UserRepository userRepository;
+    private final Logger log = LoggerFactory.getLogger(UsersController.class);
+    private final UsersRepository usersRepository;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UsersController(UsersRepository usersRepository) {
+        this.usersRepository = usersRepository;
         fillUserRepository();
     }
 
@@ -30,21 +30,21 @@ public class UserController {
         users.add(new User("Ivan"));
 
         for (User user : users) {
-            userRepository.save(user);
+            usersRepository.save(user);
             log.info("User added: id={}, name={}", user.getId(), user.getName());
         }
     }
 
-    @GetMapping("/all")
+    @GetMapping("/")
     public Iterable<User> getAllUsers() {
-        Iterable<User> users = userRepository.findAll();
+        Iterable<User> users = usersRepository.findAll();
         log.info("Get All users: {}", users.spliterator().getExactSizeIfKnown());
         return users;
     }
 
     @GetMapping("/{id}")
     public Optional<User> getUserById(@PathVariable Long id) {
-        Optional<User> user = userRepository.findById(id);
+        Optional<User> user = usersRepository.findById(id);
         log.info("Get All users: {}", user.get().getName());
         return user;
     }

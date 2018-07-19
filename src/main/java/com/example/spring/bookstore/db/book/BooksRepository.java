@@ -1,8 +1,8 @@
-package com.example.spring.bookstore.db.order;
+package com.example.spring.bookstore.db.book;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OrderRepository extends CrudRepository<Order, Long> {
+public interface BooksRepository extends CrudRepository<Book, Long> {
 }

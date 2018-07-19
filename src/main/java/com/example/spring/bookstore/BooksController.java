@@ -1,7 +1,7 @@
 package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.book.Book;
-import com.example.spring.bookstore.db.book.BookRepository;
+import com.example.spring.bookstore.db.book.BooksRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/book")
-public class BookController {
+@RequestMapping("/api/books")
+public class BooksController {
 
-    private final Logger log = LoggerFactory.getLogger(BookController.class);
-    private final BookRepository bookRepository;
+    private final Logger log = LoggerFactory.getLogger(BooksController.class);
+    private final BooksRepository booksRepository;
 
-    public BookController(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
+    public BooksController(BooksRepository booksRepository) {
+        this.booksRepository = booksRepository;
         fillBookRepository();
     }
 
@@ -28,14 +28,14 @@ public class BookController {
             int count = 1;
 
             Book book = new Book(bookName, cost, count);
-            bookRepository.save(book);
+            booksRepository.save(book);
             log.info("Book name: '{}' cost: {}", bookName, cost);
         }
     }
 
-    @GetMapping("/all")
+    @GetMapping("/")
     public Iterable<Book> getAllBooks() {
-        Iterable<Book> books = bookRepository.findAll();
+        Iterable<Book> books = booksRepository.findAll();
         log.info("Get all books: {}", books.spliterator().getExactSizeIfKnown());
         return books;
     }
@@ -43,20 +43,20 @@ public class BookController {
     @GetMapping(value = "/{id}")
     public Optional<Book> getBookById(@PathVariable Long id) {
         log.info("Get book by id: {}", id);
-        return bookRepository.findById(id);
+        return booksRepository.findById(id);
     }
 
     @DeleteMapping(value = "/{id}")
     public void deleteBookById(@PathVariable Long id) {
         log.info("Delete book by id: {}", id);
-        bookRepository.deleteById(id);
+        booksRepository.deleteById(id);
     }
 
-    @PostMapping(value = "/new/{name}/{cost}/{count}")
+    @PostMapping(value = "/{name}/{cost}/{count}")
     public void addNewBook(@PathVariable String name, @PathVariable float cost, @PathVariable int count) {
         log.info("New book: {} {} {}", name, cost, count);
         Book book = new Book(name, cost, count);
-        bookRepository.save(book);
+        booksRepository.save(book);
     }
 
 }
