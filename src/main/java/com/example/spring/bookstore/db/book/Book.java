@@ -55,4 +55,9 @@ public class Book {
     public void setCost(float cost) {
         this.cost = cost;
     }
+
+    public static boolean isNameValid(String name) {
+        String validationRegex = "[a-zA-Z]+[\\s+[a-zA-Z0-9,.]*]*";
+        return name.matches(validationRegex);
+    }
 }
