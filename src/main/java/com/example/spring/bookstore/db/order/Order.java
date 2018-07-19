@@ -22,6 +22,16 @@ public class Order {
     private ArrayList<Long> bookIds;
     private Status status;
 
+    public Order() {
+    }
+
+    public Order(Long userId, float totalPayment, ArrayList<Long> bookIds, Status status) {
+        this.userId = userId;
+        this.totalPayment = totalPayment;
+        this.bookIds = bookIds;
+        this.status = status;
+    }
+
     public Long getOrderId() {
         return orderId;
     }
