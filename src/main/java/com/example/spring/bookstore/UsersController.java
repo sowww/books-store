@@ -21,10 +21,10 @@ public class UsersController {
 
     public UsersController(UsersRepository usersRepository) {
         this.usersRepository = usersRepository;
-        fillUserRepository();
+        fillUsersRepository();
     }
 
-    private void fillUserRepository() {
+    private void fillUsersRepository() {
         ArrayList<User> users = new ArrayList<>();
         users.add(new User("Yuri"));
         users.add(new User("Ivan"));
@@ -45,7 +45,7 @@ public class UsersController {
     @GetMapping("/{id}")
     public Optional<User> getUserById(@PathVariable Long id) {
         Optional<User> user = usersRepository.findById(id);
-        log.info("Get All users: {}", user.get().getName());
+        user.ifPresent(user1 -> log.info("Get user: {}", user1.getName()));
         return user;
     }
 
