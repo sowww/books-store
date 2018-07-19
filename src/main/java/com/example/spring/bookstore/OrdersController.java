@@ -5,10 +5,7 @@ import com.example.spring.bookstore.db.order.Order;
 import com.example.spring.bookstore.db.order.OrdersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -51,4 +48,15 @@ public class OrdersController {
 
     // JUST FOR TEST
     // REWORK ALL OF THIS!!!
+
+    // Getting all orders by userId
+    // example: GET /api/orders/12
+    @GetMapping(value = "/{userId}")
+    public Iterable<Order> getBookById(@PathVariable Long userId,
+                                       HttpServletResponse response) {
+        log.info("Getting orders by userId: {}", userId);
+
+        // TODO
+        return ordersRepository.findAll();
+    }
 }
