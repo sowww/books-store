@@ -72,12 +72,12 @@ public class OrdersController {
             float totalPrice = getBooksTotalPrice(bookIds);
             Order order = new Order(userId, totalPrice, bookIds, Order.Status.PENDING);
             ordersRepository.save(order);
-            response.setStatus(HttpServletResponse.SC_ACCEPTED);
+            response.setStatus(HttpServletResponse.SC_CREATED);
             return order;
+        } else {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return null;
         }
-
-        // TODO
-        return null;
     }
 
     // Getting all orders
