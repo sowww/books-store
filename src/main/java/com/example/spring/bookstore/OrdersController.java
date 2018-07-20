@@ -146,6 +146,39 @@ public class OrdersController {
         return ordersRepository.getOrdersByUserId(userId);
     }
 
+    // Setting existing order status to PAID
+    // example: PUT /api/orders/12/paid
+    @PutMapping(value = "/{id}/paid")
+    public void orderSetPaidById(@PathVariable Long id,
+                                 HttpServletResponse response) {
+        Optional<Order> order = ordersRepository.findById(id);
+
+        // Checking if order with this id exists
+        if (order.isPresent()) {
+            // If order exists checking if it's not paid already (PENDING)
+            if (order.get().getStatus() == Order.Status.PENDING) {
+                // If status is PENDING then set it to PAID
+                order.get().setStatus(Order.Status.PAID);
+                // Save edited order in repo
+                ordersRepository.save(order.get());
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.addHeader("message", "Order status is now PAID");
+            } else {
+                // else order was already paid
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.addHeader("message", "Order status was already PAID");
+            }
+        } else {
+            // If order doesn't exists then response with 404 status
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.addHeader("message", "Order not found");
+        }
+
+
+        log.info("Getting orders by userId: {}", id);
+
+    }
+
     // Deleting order by id
     // example: DELETE /api/orders/12
     @DeleteMapping(value = "/{id}")
