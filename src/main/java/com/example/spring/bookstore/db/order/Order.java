@@ -18,7 +18,6 @@ public class Order {
     @Id
     @GeneratedValue
     private Long orderId;
-
     private Long userId;
     private float totalPayment;
     private ArrayList<Long> bookIds;
