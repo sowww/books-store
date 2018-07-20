@@ -7,7 +7,7 @@ import javax.persistence.*;
 @NamedQueries({
         @NamedQuery(name = "User.findByName",
                 query = "select u from User u where u.name = ?1"),
-        @NamedQuery(name = "Used.getNameById",
+        @NamedQuery(name = "User.getNameById",
                 query = "select u.name from User u where u.id = ?1")
 })
 public class User {
