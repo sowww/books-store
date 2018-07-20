@@ -28,12 +28,12 @@ public class BooksController {
         for (int i = 1; i <= 10; i++) {
 
             String bookName = "Book " + i;
-            int cost = 100;
+            int price = 100;
             int count = 1;
 
-            Book book = new Book(bookName, cost, count);
+            Book book = new Book(bookName, price, count);
             booksRepository.save(book);
-            log.info("Book name: '{}' cost: {} count: {}", bookName, cost, count);
+            log.info("Book name: '{}' price: {} count: {}", bookName, price, count);
         }
     }
 
@@ -97,17 +97,17 @@ public class BooksController {
     }
 
     // Creating new book with params
-    // example: POST /api/books?name=Hello world&cost=150.5&count=3
+    // example: POST /api/books?name=Hello world&price=150.5&count=3
     @PostMapping(value = "")
     public void addNewBook(@RequestParam String name,
-                           @RequestParam float cost,
+                           @RequestParam float price,
                            @RequestParam int count,
                            HttpServletResponse response) {
-        log.info("New book: {} {} {}", name, cost, count);
+        log.info("New book: {} {} {}", name, price, count);
         // Checking if name is valid
         if (Book.isNameValid(name)) {
             // then creating a new book
-            Book book = new Book(name, cost, count);
+            Book book = new Book(name, price, count);
             // save it to repo
             booksRepository.save(book);
             // setting proper status

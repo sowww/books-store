@@ -16,13 +16,13 @@ public class Book {
     private String name;
 
     private int count;
-    private float cost;
+    private float price;
 
     public Book() {}
 
-    public Book(String name, float cost, int count) {
+    public Book(String name, float price, int count) {
         this.name = name;
-        this.cost = cost;
+        this.price = price;
         this.count = count;
     }
 
@@ -50,12 +50,12 @@ public class Book {
         this.count = count;
     }
 
-    public float getCost() {
-        return cost;
+    public float getPrice() {
+        return price;
     }
 
-    public void setCost(float cost) {
-        this.cost = cost;
+    public void setPrice(float price) {
+        this.price = price;
     }
 
     public static boolean isNameValid(String name) {
