@@ -158,6 +158,7 @@ public class OrdersController {
         if (order.isPresent()) {
             // If exists then setting status to No Content (204)
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            response.addHeader("message", "Order is deleted");
             // And delete it from repo
             ordersRepository.deleteById(id);
         } else {
