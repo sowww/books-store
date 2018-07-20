@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -50,14 +51,25 @@ public class OrdersController {
     // JUST FOR TEST
     // REWORK ALL OF THIS!!!
 
-    // Getting all orders by userId
+    // Getting order by Id
     // example: GET /api/orders/12
-    @GetMapping(value = "/{userId}")
-    public Iterable<Order> getBookById(@PathVariable Long userId,
+    @GetMapping(value = "/{orderId}")
+    public Optional<Order> getOrderById(@PathVariable Long orderId,
                                        HttpServletResponse response) {
+        log.info("Getting order by id: {}", orderId);
+
+        // TODO
+        return ordersRepository.findById(orderId);
+    }
+
+    // Getting all orders with userId
+    // example: GET /api/orders?userId=12
+    @GetMapping(value = "")
+    public Iterable<Order> getOrderByUserId(@RequestParam Long userId,
+                                            HttpServletResponse response) {
         log.info("Getting orders by userId: {}", userId);
 
         // TODO
-        return ordersRepository.findAll();
+        return null;
     }
 }
