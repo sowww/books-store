@@ -113,13 +113,13 @@ public class OrdersController {
     }
 
     // Getting all orders with userId
-    // example: GET /api/orders?userId=12
-    @GetMapping(value = "")
+    // example: GET /api/orders/filter?userId=12
+    @GetMapping(value = "/filter")
     public Iterable<Order> getOrderByUserId(@RequestParam Long userId,
                                             HttpServletResponse response) {
         log.info("Getting orders by userId: {}", userId);
 
         // TODO
-        return null;
+        return ordersRepository.getOrdersByUserId(userId);
     }
 }
