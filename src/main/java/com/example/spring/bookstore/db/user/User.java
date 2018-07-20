@@ -3,6 +3,7 @@ package com.example.spring.bookstore.db.user;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "Users")
 @NamedQueries({
         @NamedQuery(name = "User.findByName",
                 query = "select u from User u where u.name = ?1"),
@@ -17,7 +18,7 @@ public class User {
 
     private String name;
 
-    public User() {
+    private User() {
     }
 
     public User(String name) {

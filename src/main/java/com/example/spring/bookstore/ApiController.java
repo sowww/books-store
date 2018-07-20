@@ -2,7 +2,7 @@
 //
 //import com.example.spring.bookstore.db.book.Book;
 //import com.example.spring.bookstore.db.book.BookRepository;
-//import com.example.spring.bookstore.db.order.BooksOrder;
+//import com.example.spring.bookstore.db.order.Order;
 //import com.example.spring.bookstore.db.user.User;
 //import com.example.spring.bookstore.db.user.UserRepository;
 //import com.example.spring.bookstore.db.visit.Visit;
@@ -91,11 +91,11 @@
 //    }
 //
 //    @GetMapping(path = "/order", produces = "application/json")
-//    public BooksOrder order(HttpServletResponse response) {
-//        BooksOrder newOrder = new BooksOrder();
+//    public Order order(HttpServletResponse response) {
+//        Order newOrder = new Order();
 //        newOrder.setOrderId(132L);
 //        newOrder.setUserId(12L);
-//        newOrder.setStatus(BooksOrder.Status.PENDING);
+//        newOrder.setStatus(Order.Status.PENDING);
 //        newOrder.setTotalPayment(1200);
 //
 //        ArrayList<Long> allBookIds = new ArrayList<>();
@@ -107,7 +107,7 @@
 //    }
 //
 //    @PostMapping(value = "/new-order/{bookIds}/{userName}", produces = "application/json")
-//    public BooksOrder newOrder(@PathVariable ArrayList<Long> bookIds,
+//    public Order newOrder(@PathVariable ArrayList<Long> bookIds,
 //                          @PathVariable String userName,
 //                          HttpServletResponse response) {
 //        log.info("Post!");
@@ -115,9 +115,9 @@
 //            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 //            return null;
 //        }
-//        BooksOrder order = new BooksOrder();
+//        Order order = new Order();
 //        order.setTotalPayment(100f);
-//        order.setStatus(BooksOrder.Status.PENDING);
+//        order.setStatus(Order.Status.PENDING);
 //        order.setUserId(1L);
 //        order.setOrderId(33L);
 //

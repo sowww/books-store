@@ -3,10 +3,12 @@ package com.example.spring.bookstore.db.order;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.ArrayList;
 
 @Entity
-public class BooksOrder {
+@Table(name = "Orders")
+public class Order {
 
     public enum Status {
         PENDING,
@@ -22,10 +24,10 @@ public class BooksOrder {
     private ArrayList<Long> bookIds;
     private Status status;
 
-    public BooksOrder() {
+    public Order() {
     }
 
-    public BooksOrder(Long userId, float totalPayment, ArrayList<Long> bookIds, Status status) {
+    public Order(Long userId, float totalPayment, ArrayList<Long> bookIds, Status status) {
         this.userId = userId;
         this.totalPayment = totalPayment;
         this.bookIds = bookIds;
