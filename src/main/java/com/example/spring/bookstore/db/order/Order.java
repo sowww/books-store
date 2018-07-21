@@ -1,12 +1,13 @@
 package com.example.spring.bookstore.db.order;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.ArrayList;
 
 @Entity
 @Table(name = "Orders")
-@NamedQuery(name = "Order.getOrdersByUserId",
-        query = "select o from Order o where o.userId = ?1")
 public class Order {
 
     public enum Status {
