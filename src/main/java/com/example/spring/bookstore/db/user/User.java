@@ -1,15 +1,12 @@
 package com.example.spring.bookstore.db.user;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "Users")
-@NamedQueries({
-        @NamedQuery(name = "User.findByName",
-                query = "select u from User u where u.name = ?1"),
-        @NamedQuery(name = "User.getNameById",
-                query = "select u.name from User u where u.id = ?1")
-})
 public class User {
 
     @Id
