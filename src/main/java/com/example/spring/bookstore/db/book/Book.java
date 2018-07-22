@@ -57,7 +57,7 @@ public class Book {
     }
 
     public static boolean isNameValid(String name) {
-        String validationRegex = "[a-zA-Z]+[\\s+[a-zA-Z0-9,.]*]*";
+        String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
         return name.matches(validationRegex);
     }
 }
