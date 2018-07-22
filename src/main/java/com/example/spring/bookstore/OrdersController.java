@@ -5,7 +5,7 @@ import com.example.spring.bookstore.db.book.BooksRepository;
 import com.example.spring.bookstore.db.order.Order;
 import com.example.spring.bookstore.db.order.OrdersRepository;
 import com.example.spring.bookstore.db.user.UsersRepository;
-import com.example.spring.bookstore.errorhandling.FieldErrorsView;
+import com.example.spring.bookstore.errors.FieldErrorsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

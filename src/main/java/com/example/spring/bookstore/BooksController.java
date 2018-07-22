@@ -2,7 +2,7 @@ package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.book.Book;
 import com.example.spring.bookstore.db.book.BooksRepository;
-import com.example.spring.bookstore.errorhandling.FieldErrorsView;
+import com.example.spring.bookstore.errors.FieldErrorsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

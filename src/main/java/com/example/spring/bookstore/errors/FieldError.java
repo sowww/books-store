@@ -1,4 +1,4 @@
-package com.example.spring.bookstore.errorhandling;
+package com.example.spring.bookstore.errors;
 
 public class FieldError {
 
