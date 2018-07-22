@@ -2,7 +2,7 @@ package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.book.Book;
 import com.example.spring.bookstore.db.book.BooksRepository;
-import com.example.spring.bookstore.errorhandling.ErrorsView;
+import com.example.spring.bookstore.errorhandling.FieldErrorsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -110,9 +110,9 @@ public class BooksController {
             return new ResponseEntity<>(book, HttpStatus.CREATED);
         } else {
             // If it's not valid, creating errorView with our error
-            ErrorsView errorsView = new ErrorsView("name", "Book name is not valid.", name);
+            FieldErrorsView fieldErrorsView = new FieldErrorsView("name", "Book name is not valid.", name);
             // And Response with this errorView
-            return new ResponseEntity<>(errorsView, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
     }
 
