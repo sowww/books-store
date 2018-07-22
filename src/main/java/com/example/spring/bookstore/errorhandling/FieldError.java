@@ -1,12 +1,12 @@
 package com.example.spring.bookstore.errorhandling;
 
-public class RequestError {
+public class FieldError {
 
     private String field;
     private String errorMessage;
     private Object rejectedValue;
 
-    RequestError(String field, String errorMessage, Object rejectedValue) {
+    FieldError(String field, String errorMessage, Object rejectedValue) {
         this.field = field;
         this.errorMessage = errorMessage;
         this.rejectedValue = rejectedValue;
