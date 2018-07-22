@@ -4,12 +4,12 @@ import com.example.spring.bookstore.db.user.User;
 import com.example.spring.bookstore.db.user.UsersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @RestController
@@ -39,7 +39,7 @@ public class UsersController {
         for (String name : names) {
             // Check if name is valid
             if (User.isUserNameValid(name)) {
-                // then create new user
+                // If it's valid, then create new user
                 User user = new User(name);
                 // Add him to repo
                 usersRepository.save(user);
@@ -51,39 +51,29 @@ public class UsersController {
     // Getting all users
     // example: GET /api/users
     @GetMapping(value = {"/", ""})
-    public Iterable<User> getAllUsers(HttpServletResponse response) {
+    public ResponseEntity<Object> getAllUsers() {
         // Get all users from repo
         Iterable<User> users = usersRepository.findAll();
-        long usersCount = users.spliterator().getExactSizeIfKnown();
-        if (usersCount > 0) {
-            response.addHeader("message", "Users are found");
-            log.info("Get All users: {}", usersCount);
-            return users;
-        } else {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.addHeader("message", "Users are not found");
-            log.info("Get All users: Users are not found");
-            return null;
-        }
+        log.info("Getting all users");
+        return ResponseEntity.ok(users);
     }
 
     // Getting user by id
     // example: GET /api/users/1
     @GetMapping("/{id}")
-    public Optional<User> getUserById(@PathVariable Long id,
-                                      HttpServletResponse response) {
+    public ResponseEntity<Object> getUserById(@PathVariable Long id) {
         // Getting user from repo
         Optional<User> user = usersRepository.findById(id);
-        // If user doesn't exist
-        if (!user.isPresent()) {
+        // If the user exists
+        if (user.isPresent()) {
+            log.info("Get user: {}", user.get().getName());
+            // Return the user
+            return ResponseEntity.ok(user);
+        } else {
             log.info("User with id:{} not found", id);
-            // Setting status to 404 and returning nothing
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.addHeader("message", "User is not found");
-            return Optional.empty();
+            // If user doesn't exist respond with 404
+            return ResponseEntity.notFound().build();
         }
-        log.info("Get user: {}", user.get().getName());
-        return user;
     }
 
 }
