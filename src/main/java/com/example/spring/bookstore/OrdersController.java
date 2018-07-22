@@ -89,6 +89,11 @@ public class OrdersController {
         }
         // Checking if user exists
         boolean isUserExists = usersRepository.findById(userId).isPresent();
+        if (!isUserExists) fieldErrorsView.addError(
+                "userId",
+                "User with this id isn't exist",
+                userId
+        );
 
         if (isBooksExist && isUserExists) {
             // If data is ok
