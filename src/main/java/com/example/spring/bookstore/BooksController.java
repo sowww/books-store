@@ -39,6 +39,30 @@ public class BooksController {
         }
     }
 
+    // Creating a new book with params
+    // example: POST /api/books?name=Hello world&price=150.5&count=3
+    @PostMapping(value = "")
+    public ResponseEntity<Object> addNewBook(@RequestParam String name,
+                                             @RequestParam float price,
+                                             @RequestParam int count) {
+        log.info("Creating a new book: {} {} {}", name, price, count);
+
+        // Checking if the name is valid
+        if (Book.isNameValid(name)) {
+            // If it's valid then creating a new book
+            Book book = new Book(name, price, count);
+            // save it in the repo
+            booksRepository.save(book);
+            // setting a proper status
+            return new ResponseEntity<>(book, HttpStatus.CREATED);
+        } else {
+            // If it's not valid, creating errorView with our error
+            FieldErrorsView fieldErrorsView = new FieldErrorsView("name", "Book name is not valid.", name);
+            // And Response with this errorView
+            return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
+        }
+    }
+
     // Getting all books
     // example: GET /api/books
     @GetMapping(value = {"", "/"})
@@ -89,30 +113,6 @@ public class BooksController {
             log.info("Book with id:{} not found", id);
             // Return 404
             return ResponseEntity.notFound().build();
-        }
-    }
-
-    // Creating a new book with params
-    // example: POST /api/books?name=Hello world&price=150.5&count=3
-    @PostMapping(value = "")
-    public ResponseEntity<Object> addNewBook(@RequestParam String name,
-                                             @RequestParam float price,
-                                             @RequestParam int count) {
-        log.info("Creating a new book: {} {} {}", name, price, count);
-
-        // Checking if the name is valid
-        if (Book.isNameValid(name)) {
-            // If it's valid then creating a new book
-            Book book = new Book(name, price, count);
-            // save it in the repo
-            booksRepository.save(book);
-            // setting a proper status
-            return new ResponseEntity<>(book, HttpStatus.CREATED);
-        } else {
-            // If it's not valid, creating errorView with our error
-            FieldErrorsView fieldErrorsView = new FieldErrorsView("name", "Book name is not valid.", name);
-            // And Response with this errorView
-            return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
     }
 
