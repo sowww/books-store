@@ -34,27 +34,6 @@ public class OrdersController {
         this.usersRepository = usersRepository;
     }
 
-    // Checking if all of this books exist
-    private boolean isBooksExist(Set<Long> bookIds) {
-        // For every book id
-        for (Long bookId : bookIds) {
-            // Getting the book
-            Optional<Book> book = booksRepository.findById(bookId);
-            // If the book doesn't exists
-            if (!book.isPresent()) {
-                // can't create order
-                return false;
-            }
-        }
-        // In other cases return true
-        return true;
-    }
-
-    // Checking if the user exists
-    private boolean isUserExists(Long userId) {
-        return usersRepository.findById(userId).isPresent();
-    }
-
     // Getting the sum of book prices
     private float getBooksTotalPrice(Set<Long> bookIds) {
         float sum = 0;
@@ -74,37 +53,56 @@ public class OrdersController {
 
         log.info("Trying to create order. bookIds:{} userId:{}", bookIds, userId);
 
+        // Create a fieldErrorsView
+        FieldErrorsView fieldErrorsView = new FieldErrorsView();
         // Checking data for order
-        boolean isBooksExists = isBooksExist(bookIds);
-        boolean isUserExists = isUserExists(userId);
+        // Setting init value
+        boolean isBooksExist = true;
+        // For every bookId
+        for (Long bookId : bookIds) {
+            // Getting the book
+            Optional<Book> book = booksRepository.findById(bookId);
+            // If the book doesn't exists
+            if (!book.isPresent()) {
+                // can't create order
+                isBooksExist = false;
+                // Adding error
+                fieldErrorsView.addError(
+                        "bookIds",
+                        "Book with this id doesn't exist",
+                        bookId
+                );
+            } else {
+                // if the book exists checking book count
+                if (book.get().getCount() < 1) {
+                    // if book count < 1
+                    // can't create order
+                    isBooksExist = false;
+                    // Adding error
+                    fieldErrorsView.addError(
+                            "bookIds",
+                            "This book isn't available (count < 1)",
+                            bookId
+                    );
+                }
+            }
+        }
+        // Checking if user exists
+        boolean isUserExists = usersRepository.findById(userId).isPresent();
 
-        if (isBooksExists && isUserExists) {
+        if (isBooksExist && isUserExists) {
             // If data is ok
             log.info("Trying to create order. bookIds:{} userId:{}", bookIds, userId);
             // Getting a books total price
             float totalPrice = getBooksTotalPrice(bookIds);
             // Creating the new order
             Order order = new Order(userId, totalPrice, bookIds, Order.Status.PENDING);
-            // Saving it in repo
+            // Saving it in the repo
             ordersRepository.save(order);
             // Response with (201) Created and returning order
             return new ResponseEntity<>(order, HttpStatus.CREATED);
         } else {
-            // If data is not ok
-            // Create a fieldErrorsView
-            FieldErrorsView fieldErrorsView = new FieldErrorsView();
-            // If not all of bookIds exists
-            if (!isBooksExists)
-                // Adding new error in errorsView
-                fieldErrorsView.addError("bookIds",
-                        "Not all of bookIds exists",
-                        bookIds);
-
-            if (!isUserExists)
-                fieldErrorsView.addError("userId",
-                        "User with this id doesn't exist",
-                        userId);
-
+            // If something is not ok
             // Response with (404) Not Found and returning fieldErrorsView
             return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
         }
@@ -147,7 +145,8 @@ public class OrdersController {
     public ResponseEntity<Object> getOrderByUserId(@RequestParam Long userId) {
         log.info("Getting orders by userId: {}", userId);
 
-        if (isUserExists(userId)) {
+        // If user exists
+        if (usersRepository.findById(userId).isPresent()) {
             // Getting an order from repo
             Iterable<Order> orders = ordersRepository.getOrdersByUserId(userId);
             return ResponseEntity.ok(orders);
