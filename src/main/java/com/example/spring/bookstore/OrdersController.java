@@ -1,18 +1,20 @@
 package com.example.spring.bookstore;
 
-
 import com.example.spring.bookstore.db.book.Book;
 import com.example.spring.bookstore.db.book.BooksRepository;
 import com.example.spring.bookstore.db.order.Order;
 import com.example.spring.bookstore.db.order.OrdersRepository;
 import com.example.spring.bookstore.db.user.UsersRepository;
+import com.example.spring.bookstore.errorhandling.FieldErrorsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -32,8 +34,8 @@ public class OrdersController {
         this.usersRepository = usersRepository;
     }
 
-    // Checking if we can create order with this params
-    private boolean isOrderCorrect(ArrayList<Long> bookIds, Long userId) {
+    // Checking if all of this books exist
+    private boolean isBooksExist(Set<Long> bookIds) {
         // For every book id
         for (Long bookId : bookIds) {
             // Getting the book
@@ -42,115 +44,128 @@ public class OrdersController {
             if (!book.isPresent()) {
                 // can't create order
                 return false;
-            } else {
-                // if the book exists, checking books count
-                if (book.get().getCount() < 1) {
-                    // can't create order without book
-                    return false;
-                }
             }
         }
-
-        // If the user doesn't exists, return false
-        if (!usersRepository.findById(userId).isPresent()) return false;
-
         // In other cases return true
         return true;
     }
 
+    // Checking if the user exists
+    private boolean isUserExists(Long userId) {
+        return usersRepository.findById(userId).isPresent();
+    }
 
-    // Getting sum of book prices
-    private float getBooksTotalPrice(ArrayList<Long> bookIds) {
+    // Getting the sum of book prices
+    private float getBooksTotalPrice(Set<Long> bookIds) {
         float sum = 0;
         // For every bookId
         for (Long bookId : bookIds) {
-            // Adding book price to sum
+            // Adding the book price to sum
             sum += booksRepository.findById(bookId).get().getPrice();
         }
         return sum;
     }
 
-    // Creating new order
+    // Creating a new order
     // example: POST /api/orders?bookIds=1,2,5,3&userId=12
     @PostMapping(value = "", produces = "application/json")
-    public Order createNewOrder(@RequestParam ArrayList<Long> bookIds,
-                                @RequestParam Long userId,
-                                HttpServletResponse response) {
+    public ResponseEntity<Object> createNewOrder(@RequestParam HashSet<Long> bookIds,
+                                                 @RequestParam Long userId) {
 
         log.info("Trying to create order. bookIds:{} userId:{}", bookIds, userId);
 
         // Checking data for order
-        if (isOrderCorrect(bookIds, userId)) {
+        boolean isBooksExists = isBooksExist(bookIds);
+        boolean isUserExists = isUserExists(userId);
 
+        if (isBooksExists && isUserExists) {
             // If data is ok
             log.info("Trying to create order. bookIds:{} userId:{}", bookIds, userId);
-            // Getting books total price
+            // Getting a books total price
             float totalPrice = getBooksTotalPrice(bookIds);
-            // Creating new order
+            // Creating the new order
             Order order = new Order(userId, totalPrice, bookIds, Order.Status.PENDING);
             // Saving it in repo
             ordersRepository.save(order);
-            // Response Created (201)
-            response.setStatus(HttpServletResponse.SC_CREATED);
-            // Returning order
-            return order;
+            // Response with (201) Created and returning order
+            return new ResponseEntity<>(order, HttpStatus.CREATED);
         } else {
-            // If data is not ok, response with (400)
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            // And return null
-            return null;
+            // If data is not ok
+            // Create a fieldErrorsView
+            FieldErrorsView fieldErrorsView = new FieldErrorsView();
+            // If not all of bookIds exists
+            if (!isBooksExists)
+                // Adding new error in errorsView
+                fieldErrorsView.addError("bookIds",
+                        "Not all of bookIds exists",
+                        bookIds);
+
+            if (!isUserExists)
+                fieldErrorsView.addError("userId",
+                        "User with this id doesn't exist",
+                        userId);
+
+            // Response with (404) Not Found and returning fieldErrorsView
+            return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
         }
     }
 
     // Getting all orders
     // example: GET /api/orders
     @GetMapping(value = {"", "/"})
-    public Iterable<Order> getAllOrders() {
+    public ResponseEntity<Object> getAllOrders() {
         // Getting all orders from repo
         Iterable<Order> orders = ordersRepository.findAll();
         log.info("Get all orders: {}", orders.spliterator().getExactSizeIfKnown());
-        return orders;
+        return ResponseEntity.ok(orders);
     }
 
-    // Getting order by Id
+    // Getting an order by Id
     // example: GET /api/orders/12
     @GetMapping(value = "/{id}")
-    public Optional<Order> getOrderById(@PathVariable Long id,
-                                        HttpServletResponse response) {
+    public ResponseEntity<Object> getOrderById(@PathVariable Long id) {
         log.info("Getting order by id: {}", id);
 
-        // Getting order from repo
+        // Getting an order from repo
         Optional<Order> order = ordersRepository.findById(id);
 
-        // If order doesn't exist
-        if (!order.isPresent()) {
+        // If the order exists
+        if (order.isPresent()) {
+            // returning the order
+            return ResponseEntity.ok(order);
+        } else {
+            // else
             log.info("Order with id:{} not found", id);
-            // Setting status to 404 and returning nothing
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.addHeader("message", "Order is not found");
-            return Optional.empty();
+            // Returning (404) Not Found
+            return ResponseEntity.notFound().build();
         }
-
-        // else returning order
-        return order;
     }
 
     // Getting all orders with userId
     // example: GET /api/orders/filter?userId=12
     @GetMapping(value = "/filter")
-    public Iterable<Order> getOrderByUserId(@RequestParam Long userId,
-                                            HttpServletResponse response) {
+    public ResponseEntity<Object> getOrderByUserId(@RequestParam Long userId) {
         log.info("Getting orders by userId: {}", userId);
 
-        // TODO
-        return ordersRepository.getOrdersByUserId(userId);
+        if (isUserExists(userId)) {
+            // Getting an order from repo
+            Iterable<Order> orders = ordersRepository.getOrdersByUserId(userId);
+            return ResponseEntity.ok(orders);
+        } else {
+            FieldErrorsView fieldErrorsView = new FieldErrorsView(
+                    "userId",
+                    "User with this id doesn't exist",
+                    userId
+            );
+            return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
+        }
     }
 
     // Setting existing order status to PAID
     // example: PUT /api/orders/12/paid
     @PutMapping(value = "/{id}/paid")
-    public void orderSetPaidById(@PathVariable Long id,
-                                 HttpServletResponse response) {
+    public ResponseEntity<Object> orderSetPaidById(@PathVariable Long id) {
+
         Optional<Order> order = ordersRepository.findById(id);
 
         // Checking if order with this id exists
@@ -161,44 +176,44 @@ public class OrdersController {
                 order.get().setStatus(Order.Status.PAID);
                 // Save edited order in repo
                 ordersRepository.save(order.get());
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.addHeader("message", "Order status is now PAID");
+                return ResponseEntity.ok(order.get());
             } else {
                 // else order was already paid
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.addHeader("message", "Order status was already PAID");
+                FieldErrorsView fieldErrorsView = new FieldErrorsView(
+                        "id",
+                        "Order status was already PAID",
+                        id
+                );
+                return new ResponseEntity<>(fieldErrorsView, HttpStatus.FORBIDDEN);
             }
         } else {
-            // If order doesn't exists then response with 404 status
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.addHeader("message", "Order not found");
+            // If order doesn't exists then response with (404) Not Found
+            FieldErrorsView fieldErrorsView = new FieldErrorsView(
+                    "id",
+                    "Order with this id doesn't exist",
+                    id
+            );
+            return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
         }
-
-
-        log.info("Getting orders by userId: {}", id);
-
     }
 
     // Deleting order by id
     // example: DELETE /api/orders/12
     @DeleteMapping(value = "/{id}")
-    public void deleteOrderById(@PathVariable Long id,
-                                HttpServletResponse response) {
+    public ResponseEntity<Object> deleteOrderById(@PathVariable Long id) {
         log.info("Deleting order by id: {}", id);
+        // Getting an order from the repo
         Optional<Order> order = ordersRepository.findById(id);
 
         // Checking if order exists
         if (order.isPresent()) {
-            // If exists then setting status to No Content (204)
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            response.addHeader("message", "Order is deleted");
-            // And delete it from repo
+            // If exists delete it from the repo
             ordersRepository.deleteById(id);
+            // and then returning (204) No Content
+            return ResponseEntity.noContent().build();
         } else {
-            // Else set status to Not Found (404)
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.addHeader("message", "Order is not found");
+            // Else set status to (404) Not Found
+            return ResponseEntity.notFound().build();
         }
-
     }
 }
