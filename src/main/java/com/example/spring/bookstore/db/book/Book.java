@@ -12,9 +12,7 @@ public class Book {
     @Id
     @GeneratedValue
     private Long id;
-
     private String name;
-
     private int count;
     private float price;
 
