@@ -2,11 +2,13 @@ package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.book.Book;
 import com.example.spring.bookstore.db.book.BooksRepository;
+import com.example.spring.bookstore.errorhandling.ErrorsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @RestController
@@ -40,80 +42,75 @@ public class BooksController {
     // Getting all books
     // example: GET /api/books
     @GetMapping(value = {"", "/"})
-    public Iterable<Book> getAllBooks() {
+    public ResponseEntity<Object> getAllBooks() {
+        // Finding all books
         Iterable<Book> books = booksRepository.findAll();
         log.info("Get all books: {}", books.spliterator().getExactSizeIfKnown());
-        return books;
+        return ResponseEntity.ok(books);
     }
 
     // Getting book by id
     // example: GET /api/books/5
     @GetMapping(value = "/{id}")
-    public Optional<Book> getBookById(@PathVariable Long id,
-                                      HttpServletResponse response) {
+    public ResponseEntity<Object> getBookById(@PathVariable Long id) {
         log.info("Getting book by id: {}", id);
 
-        // Getting book from repo
+        // Getting a book from repo
         Optional<Book> book = booksRepository.findById(id);
 
-        // If book doesn't exist
-        if (!book.isPresent()) {
-            log.info("Book with id:{} not found", id);
-            // Setting status to 404 and returning nothing
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.addHeader("message", "Book is not found");
-            return Optional.empty();
+        // If the book exists
+        if (book.isPresent()) {
+            // return the book
+            return ResponseEntity.ok(book);
+        } else {
+            // if the book doesn't exist
+            log.info("The book with id:{} is not found", id);
+            return ResponseEntity.notFound().build();
         }
-
-        // else returning book
-        return book;
     }
 
-    // Deleting book by id
+    // Deleting a book by id
     // example: DELETE /api/books/5
     @DeleteMapping(value = "/{id}")
-    public void deleteBookById(@PathVariable Long id,
-                               HttpServletResponse response) {
-        log.info("Delete book by id: {}", id);
+    public ResponseEntity<Object> deleteBookById(@PathVariable Long id) {
+        log.info("Delete a book by id: {}", id);
 
-        // Checking if book exists
-        // Getting book from repo
+        // Getting the book from repo
         Optional<Book> book = booksRepository.findById(id);
 
-        // If book doesn't exist
-        if (!book.isPresent()) {
-            log.info("Book with id:{} not found", id);
-            // Setting status to 404
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.addHeader("message", "Book is not found");
-        } else {
-            log.info("Book with id:{} deleted", id);
-            // else deleting the book
+        // Checking if the book exists
+        if (book.isPresent()) {
+            // If the book exists
             booksRepository.deleteById(id);
-            // setting proper response status (or may be I could leave 200)
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            response.addHeader("message", "Book was deleted");
+            log.info("Book with id:{} deleted", id);
+            // Return proper response
+            return ResponseEntity.ok().build();
+        } else {
+            log.info("Book with id:{} not found", id);
+            // Return 404
+            return ResponseEntity.notFound().build();
         }
     }
 
-    // Creating new book with params
+    // Creating a new book with params
     // example: POST /api/books?name=Hello world&price=150.5&count=3
     @PostMapping(value = "")
-    public void addNewBook(@RequestParam String name,
-                           @RequestParam float price,
-                           @RequestParam int count,
-                           HttpServletResponse response) {
-        log.info("New book: {} {} {}", name, price, count);
-        // Checking if name is valid
+    public ResponseEntity<Object> addNewBook(@RequestParam String name,
+                                             @RequestParam float price,
+                                             @RequestParam int count) {
+        log.info("Creating a new book: {} {} {}", name, price, count);
+
+        // Checking if the name is valid
         if (Book.isNameValid(name)) {
             // then creating a new book
             Book book = new Book(name, price, count);
-            // save it to repo
+            // save it in the repo
             booksRepository.save(book);
-            // setting proper status
-            response.setStatus(HttpServletResponse.SC_CREATED);
-            // adding response header: message
-            response.addHeader("message", "Book was created");
+            // setting a proper status
+            return new ResponseEntity<>(book, HttpStatus.CREATED);
+        } else {
+            ErrorsView errorsView = new ErrorsView("name", "Book name is not valid.", name);
+            return new ResponseEntity<>(errorsView, HttpStatus.BAD_REQUEST);
         }
     }
 
