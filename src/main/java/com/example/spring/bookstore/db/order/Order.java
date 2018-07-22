@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.ArrayList;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "Orders")
@@ -20,13 +20,13 @@ public class Order {
     private Long orderId;
     private Long userId;
     private float totalPayment;
-    private ArrayList<Long> bookIds;
+    private HashSet<Long> bookIds;
     private Status status;
 
     public Order() {
     }
 
-    public Order(Long userId, float totalPayment, ArrayList<Long> bookIds, Status status) {
+    public Order(Long userId, float totalPayment, HashSet<Long> bookIds, Status status) {
         this.userId = userId;
         this.totalPayment = totalPayment;
         this.bookIds = bookIds;
@@ -57,11 +57,11 @@ public class Order {
         this.totalPayment = totalPayment;
     }
 
-    public ArrayList<Long> getBooks() {
+    public HashSet<Long> getBooks() {
         return bookIds;
     }
 
-    public void setBooks(ArrayList<Long> books) {
+    public void setBooks(HashSet<Long> books) {
         this.bookIds = books;
     }
 
