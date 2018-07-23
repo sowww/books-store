@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.ValidationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -33,6 +34,7 @@ public class Book {
 
     public Book(String name, float price, int count) {
 //        this();
+//        validateParams(name, price, count);
         setName(name);
         setPrice(price);
         setCount(count);
@@ -73,8 +75,19 @@ public class Book {
         this.price = price;
     }
 
-//    public static boolean isNameValid(String name) {
-//        String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
-//        return (name.matches(validationRegex) && name != null);
-//    }
+    private void validateParams(String name, float price, int count) throws ValidationException {
+        if (!isNameValid(name))
+            throw new ValidationException("Book name is not valid");
+
+        if (price < 0)
+            throw new ValidationException("Book price can't be less than 0");
+
+        if (count < 0)
+            throw new ValidationException("Book count can't be less than 0");
+    }
+
+    public static boolean isNameValid(String name) {
+        String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
+        return (name.matches(validationRegex) && name != null);
+    }
 }
