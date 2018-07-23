@@ -4,6 +4,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "Books")
@@ -12,16 +16,26 @@ public class Book {
     @Id
     @GeneratedValue
     private Long id;
+
+    @NotBlank(message = "Name can't be blank")
+    @Pattern(regexp = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*", message = "Book name is not valid")
     private String name;
+
+    @NotNull(message = "Count can't be null")
+    @Min(value = 0, message = "Count can't be less than 0")
     private int count;
+
+    @NotNull(message = "Price can't be null")
+    @Min(value = 0, message = "Price can't be less than 0")
     private float price;
 
-    public Book() {}
+//    private Book() {}
 
     public Book(String name, float price, int count) {
-        this.name = name;
-        this.price = price;
-        this.count = count;
+//        this();
+        setName(name);
+        setPrice(price);
+        setCount(count);
     }
 
     public Long getId() {
@@ -37,6 +51,7 @@ public class Book {
     }
 
     public void setName(String name) {
+//        validateName(name);
         this.name = name;
     }
 
@@ -45,6 +60,7 @@ public class Book {
     }
 
     public void setCount(int count) {
+//        validateCount(count);
         this.count = count;
     }
 
@@ -53,11 +69,12 @@ public class Book {
     }
 
     public void setPrice(float price) {
+//        validatePrice(price);
         this.price = price;
     }
 
-    public static boolean isNameValid(String name) {
-        String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
-        return name.matches(validationRegex);
-    }
+//    public static boolean isNameValid(String name) {
+//        String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
+//        return (name.matches(validationRegex) && name != null);
+//    }
 }
