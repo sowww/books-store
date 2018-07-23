@@ -2,13 +2,14 @@ package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.book.Book;
 import com.example.spring.bookstore.db.book.BooksRepository;
-import com.example.spring.bookstore.errors.FieldErrorsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -34,33 +35,41 @@ public class BooksController {
             int count = 1;
 
             Book book = new Book(bookName, price, count);
+
             booksRepository.save(book);
             log.info("Book name: '{}' price: {} count: {}", bookName, price, count);
         }
     }
 
     // Creating a new book with params
-    // example: POST /api/books?name=Hello world&price=150.5&count=3
+    // example: POST /api/books
     @PostMapping(value = "")
-    public ResponseEntity<Object> addNewBook(@RequestParam String name,
-                                             @RequestParam float price,
-                                             @RequestParam int count) {
-        log.info("Creating a new book: {} {} {}", name, price, count);
+    public ResponseEntity<Object> addNewBook(@Valid @RequestBody Book book, Errors errors) {
 
-        // Checking if the name is valid
-        if (Book.isNameValid(name)) {
-            // If it's valid then creating a new book
-            Book book = new Book(name, price, count);
-            // save it in the repo
-            booksRepository.save(book);
-            // setting a proper status
-            return new ResponseEntity<>(book, HttpStatus.CREATED);
-        } else {
-            // If it's not valid, creating errorView with our error
-            FieldErrorsView fieldErrorsView = new FieldErrorsView("name", "Book name is not valid.", name);
-            // And Response with this errorView
-            return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
+        if (errors.hasErrors()) {
+            log.info("Errors");
+            return new ResponseEntity<>(errors.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
+
+        booksRepository.save(book);
+        return new ResponseEntity<>(book, HttpStatus.CREATED);
+
+//        log.info("Creating a new book: {} {} {}", name, price, count);
+//
+//        // Checking if the name is valid
+//        if (Book.isNameValid(name)) {
+//            // If it's valid then creating a new book
+//            Book book = new Book(name, price, count);
+//            // save it in the repo
+//            booksRepository.save(book);
+//            // setting a proper status
+//            return new ResponseEntity<>(book, HttpStatus.CREATED);
+//        } else {
+//            // If it's not valid, creating errorView with our error
+//            FieldErrorsView fieldErrorsView = new FieldErrorsView("name", "Book name is not valid.", name);
+//            // And Response with this errorView
+//            return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
+//        }
     }
 
     // Getting all books
