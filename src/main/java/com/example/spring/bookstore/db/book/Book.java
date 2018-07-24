@@ -30,14 +30,20 @@ public class Book {
     @Min(value = 0, message = "Price can't be less than 0")
     private float price;
 
-//    private Book() {}
+    private Book() {
+    }
 
-    public Book(String name, float price, int count) {
-//        this();
-//        validateParams(name, price, count);
+    public Book(String name, float price, int count) throws ValidationException {
+        this();
+        validateParams(name, price, count);
         setName(name);
         setPrice(price);
         setCount(count);
+    }
+
+    public static boolean isNameValid(String name) {
+        String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
+        return (name.matches(validationRegex) && name != null);
     }
 
     public Long getId() {
@@ -84,10 +90,5 @@ public class Book {
 
         if (count < 0)
             throw new ValidationException("Book count can't be less than 0");
-    }
-
-    public static boolean isNameValid(String name) {
-        String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
-        return (name.matches(validationRegex) && name != null);
     }
 }
