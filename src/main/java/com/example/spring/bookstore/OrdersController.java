@@ -66,6 +66,42 @@ public class OrdersController {
         return ResponseEntity.ok(OrderView.fromOrder(order));
     }
 
+    // Setting existing order status to PAID
+    // example: POST /api/orders/12/pay
+    @PostMapping(value = "/{id}/pay")
+    public ResponseEntity<Object> orderSetPaidById(@PathVariable Long id) {
+
+        Optional<Order> order = ordersRepository.findById(id);
+
+        // Checking if order with this id exists
+        if (order.isPresent()) {
+            // If order exists checking if it's not paid already (PENDING)
+            if (order.get().getStatus() == Order.Status.PENDING) {
+                // If status is PENDING then set it to PAID
+                order.get().setStatus(Order.Status.PAID);
+                // Save edited order in repo
+                ordersRepository.save(order.get());
+                return ResponseEntity.ok(order.get());
+            } else {
+                // else order was already paid
+                FieldErrorsView fieldErrorsView = new FieldErrorsView(
+                        "id",
+                        "Order status was already PAID",
+                        id
+                );
+                return new ResponseEntity<>(fieldErrorsView, HttpStatus.FORBIDDEN);
+            }
+        } else {
+            // If order doesn't exists then response with (404) Not Found
+            FieldErrorsView fieldErrorsView = new FieldErrorsView(
+                    "id",
+                    "Order with this id doesn't exist",
+                    id
+            );
+            return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
+        }
+    }
+
     // Getting all orders
     // example: GET /api/orders
     @GetMapping(value = {"", "/"})
@@ -117,42 +153,6 @@ public class OrdersController {
                     "userId",
                     "User with this id doesn't exist",
                     userId
-            );
-            return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
-        }
-    }
-
-    // Setting existing order status to PAID
-    // example: PUT /api/orders/12/paid
-    @PutMapping(value = "/{id}/paid")
-    public ResponseEntity<Object> orderSetPaidById(@PathVariable Long id) {
-
-        Optional<Order> order = ordersRepository.findById(id);
-
-        // Checking if order with this id exists
-        if (order.isPresent()) {
-            // If order exists checking if it's not paid already (PENDING)
-            if (order.get().getStatus() == Order.Status.PENDING) {
-                // If status is PENDING then set it to PAID
-                order.get().setStatus(Order.Status.PAID);
-                // Save edited order in repo
-                ordersRepository.save(order.get());
-                return ResponseEntity.ok(order.get());
-            } else {
-                // else order was already paid
-                FieldErrorsView fieldErrorsView = new FieldErrorsView(
-                        "id",
-                        "Order status was already PAID",
-                        id
-                );
-                return new ResponseEntity<>(fieldErrorsView, HttpStatus.FORBIDDEN);
-            }
-        } else {
-            // If order doesn't exists then response with (404) Not Found
-            FieldErrorsView fieldErrorsView = new FieldErrorsView(
-                    "id",
-                    "Order with this id doesn't exist",
-                    id
             );
             return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
         }
