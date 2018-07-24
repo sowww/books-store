@@ -1,9 +1,10 @@
 package com.example.spring.bookstore.db.user;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.example.spring.bookstore.db.order.Order;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "Users")
@@ -14,12 +15,20 @@ public class User {
     private Long id;
     private String name;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Order> orders;
+
     private User() {
     }
 
     public User(String name) {
         this();
         setName(name);
+    }
+
+    public static boolean isUserNameValid(String name) {
+        String validationRegex = "[a-zA-Z]+[a-zA-Z0-9_\\s.]*";
+        return name.matches(validationRegex);
     }
 
     public Long getId() {
@@ -38,9 +47,12 @@ public class User {
         this.name = name;
     }
 
-    public static boolean isUserNameValid(String name) {
-        String validationRegex = "[a-zA-Z]+[a-zA-Z0-9_\\s.]*";
-        return name.matches(validationRegex);
+    @JsonIgnore
+    public Set<Order> getOrders() {
+        return orders;
     }
 
+    public void setOrders(Set<Order> orders) {
+        this.orders = orders;
+    }
 }

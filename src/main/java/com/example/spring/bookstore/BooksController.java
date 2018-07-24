@@ -55,7 +55,7 @@ public class BooksController {
         if (errors.hasErrors()) {
             FieldErrorsView fieldErrorsView = new FieldErrorsView();
             fieldErrorsView.addErrors(errors);
-            log.info("Errors: {}", errors.getErrorCount());
+            log.info("POST /api/books errors count: {}", errors.getErrorCount());
             return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
 

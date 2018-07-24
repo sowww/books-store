@@ -1,35 +1,35 @@
 package com.example.spring.bookstore.db.order;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.HashSet;
+import com.example.spring.bookstore.db.user.User;
+
+import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "Orders")
 public class Order {
 
-    public enum Status {
-        PENDING,
-        PAID
-    }
-
     @Id
     @GeneratedValue
     private Long orderId;
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
     private float totalPayment;
-    private HashSet<Long> bookIds;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private Set<OrderItem> orderItems;
+
+    //    private HashSet<Long> bookIds;
     private Status status;
 
     public Order() {
     }
 
-    public Order(Long userId, float totalPayment, HashSet<Long> bookIds, Status status) {
-        this.userId = userId;
+    public Order(User user, float totalPayment, Set<OrderItem> orderItems, Status status) {
+        this.user = user;
         this.totalPayment = totalPayment;
-        this.bookIds = bookIds;
+        this.orderItems = orderItems;
         this.status = status;
     }
 
@@ -41,12 +41,12 @@ public class Order {
         this.orderId = orderId;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public float getTotalPayment() {
@@ -57,12 +57,12 @@ public class Order {
         this.totalPayment = totalPayment;
     }
 
-    public HashSet<Long> getBooks() {
-        return bookIds;
+    public Set<OrderItem> getOrderItems() {
+        return orderItems;
     }
 
-    public void setBooks(HashSet<Long> books) {
-        this.bookIds = books;
+    public void setOrderItems(Set<OrderItem> orderItems) {
+        this.orderItems = orderItems;
     }
 
     public Status getStatus() {
@@ -71,5 +71,10 @@ public class Order {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public enum Status {
+        PENDING,
+        PAID
     }
 }

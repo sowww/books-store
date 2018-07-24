@@ -1,17 +1,20 @@
 package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.book.Book;
+import com.example.spring.bookstore.db.book.BookItem;
 import com.example.spring.bookstore.db.book.BooksRepository;
-import com.example.spring.bookstore.db.order.Order;
-import com.example.spring.bookstore.db.order.OrdersRepository;
+import com.example.spring.bookstore.db.order.*;
+import com.example.spring.bookstore.db.user.User;
 import com.example.spring.bookstore.db.user.UsersRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -34,83 +37,33 @@ public class OrdersController {
         this.usersRepository = usersRepository;
     }
 
-    // Getting the sum of book prices
-    private float getBooksTotalPrice(Set<Long> bookIds) {
-        float sum = 0;
-        // For every bookId
-        for (Long bookId : bookIds) {
-            // Adding the book price to sum
-            sum += booksRepository.findById(bookId).get().getPrice();
-        }
-        return sum;
-    }
-
     // Creating a new order
-    // example: POST /api/orders?bookIds=1,2,5,3&userId=12
+    // example: POST /api/orders
     @PostMapping(value = "", produces = "application/json")
-    public ResponseEntity<Object> createNewOrder(@RequestParam HashSet<Long> bookIds,
-                                                 @RequestParam Long userId) {
+    public ResponseEntity<Object> createNewOrder(@Valid @RequestBody OrderRequest orderRequest, Errors errors) {
 
-        log.info("Trying to create order. bookIds:{} userId:{}", bookIds, userId);
-
-        // Create a fieldErrorsView
-        FieldErrorsView fieldErrorsView = new FieldErrorsView();
-        // Checking data for order
-        // Setting init value
-        boolean isBooksExist = true;
-        // For every bookId
-        for (Long bookId : bookIds) {
-            // Getting the book
-            Optional<Book> book = booksRepository.findById(bookId);
-            // If the book doesn't exists
-            if (!book.isPresent()) {
-                // can't create order
-                isBooksExist = false;
-                // Adding error
-                fieldErrorsView.addError(
-                        "bookIds",
-                        "Book with this id doesn't exist",
-                        bookId
-                );
-            } else {
-                // if the book exists checking book count
-                if (book.get().getCount() < 1) {
-                    // if book count < 1
-                    // can't create order
-                    isBooksExist = false;
-                    // Adding error
-                    fieldErrorsView.addError(
-                            "bookIds",
-                            "This book isn't available (count < 1)",
-                            bookId
-                    );
-                }
-            }
+        if (errors.hasErrors()) {
+            FieldErrorsView fieldErrorsView = new FieldErrorsView();
+            fieldErrorsView.addErrors(errors);
+            log.info("POST /api/orders errors count: {}", errors.getErrorCount());
+            return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
-        // Checking if user exists
-        boolean isUserExists = usersRepository.findById(userId).isPresent();
-        if (!isUserExists) fieldErrorsView.addError(
-                "userId",
-                "User with this id isn't exist",
-                userId
-        );
+        Order order = new Order();
 
-        if (isBooksExist && isUserExists) {
-            // If data is ok
-            log.info("Trying to create order. bookIds:{} userId:{}", bookIds, userId);
-            // Getting a books total price
-            float totalPrice = getBooksTotalPrice(bookIds);
-            // Creating the new order
-            Order order = new Order(userId, totalPrice, bookIds, Order.Status.PENDING);
-            // Saving it in the repo
-            ordersRepository.save(order);
-            // Response with (201) Created and returning order
-            return new ResponseEntity<>(order, HttpStatus.CREATED);
-        } else {
-            // If something is not ok
-            // Response with (404) Not Found and returning fieldErrorsView
-            return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
+        Set<OrderItem> orderItems = new HashSet<>();
+        float sum = 0;
+        for (BookItem bookItem : orderRequest.getBooks()) {
+            Book book = booksRepository.findById(bookItem.getBookId()).get();
+            sum += book.getPrice() * bookItem.getQuantity();
+            orderItems.add(new OrderItem(book, order, bookItem.getQuantity()));
         }
+        User user = usersRepository.findById(orderRequest.getUserId()).get();
+        order.setTotalPayment(sum);
+        order.setStatus(Order.Status.PENDING);
+        order.setOrderItems(orderItems);
+        order.setUser(user);
+        ordersRepository.save(order);
+        return ResponseEntity.ok(OrderView.fromOrder(order));
     }
 
     // Getting all orders
@@ -120,7 +73,11 @@ public class OrdersController {
         // Getting all orders from repo
         Iterable<Order> orders = ordersRepository.findAll();
         log.info("Get all orders: {}", orders.spliterator().getExactSizeIfKnown());
-        return ResponseEntity.ok(orders);
+        Set<OrderView> orderViews = new HashSet<>();
+        for (Order order : orders) {
+            orderViews.add(OrderView.fromOrder(order));
+        }
+        return ResponseEntity.ok(orderViews);
     }
 
     // Getting an order by Id
@@ -135,7 +92,7 @@ public class OrdersController {
         // If the order exists
         if (order.isPresent()) {
             // returning the order
-            return ResponseEntity.ok(order);
+            return ResponseEntity.ok(OrderView.fromOrder(order.get()));
         } else {
             // else
             log.info("Order with id:{} not found", id);

@@ -1,14 +1,15 @@
 package com.example.spring.bookstore.db.book;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.example.spring.bookstore.db.order.OrderItem;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
 import javax.validation.ValidationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.Set;
 
 @Entity
 @Table(name = "Books")
@@ -30,6 +31,9 @@ public class Book {
     @Min(value = 0, message = "Price can't be less than 0")
     private float price;
 
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    private Set<OrderItem> orderItems;
+
     private Book() {
     }
 
@@ -44,6 +48,15 @@ public class Book {
     public static boolean isNameValid(String name) {
         String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
         return (name.matches(validationRegex) && name != null);
+    }
+
+    @JsonIgnore
+    public Set<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(Set<OrderItem> orderItems) {
+        this.orderItems = orderItems;
     }
 
     public Long getId() {
