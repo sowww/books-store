@@ -2,6 +2,7 @@ package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.book.Book;
 import com.example.spring.bookstore.db.book.BooksRepository;
+import com.example.spring.bookstore.errors.FieldErrorsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 import java.util.Optional;
 
 @RestController
@@ -30,14 +32,18 @@ public class BooksController {
     private void fillBooksRepository() {
         for (int i = 1; i <= 10; i++) {
 
-            String bookName = "Book " + i;
+            String bookName = "%Book " + i;
             int price = 100;
             int count = 1;
 
-            Book book = new Book(bookName, price, count);
+            try {
+                Book book = new Book(bookName, price, count);
+                booksRepository.save(book);
+                log.info("Book name: '{}' price: {} count: {}", bookName, price, count);
+            } catch (ValidationException e) {
+                log.info(e.getMessage());
+            }
 
-            booksRepository.save(book);
-            log.info("Book name: '{}' price: {} count: {}", bookName, price, count);
         }
     }
 
@@ -47,8 +53,10 @@ public class BooksController {
     public ResponseEntity<Object> addNewBook(@Valid @RequestBody Book book, Errors errors) {
 
         if (errors.hasErrors()) {
-            log.info("Errors");
-            return new ResponseEntity<>(errors.getAllErrors(), HttpStatus.BAD_REQUEST);
+            FieldErrorsView fieldErrorsView = new FieldErrorsView();
+            fieldErrorsView.addErrors(errors);
+            log.info("Errors: {}", errors.getErrorCount());
+            return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
 
         booksRepository.save(book);
