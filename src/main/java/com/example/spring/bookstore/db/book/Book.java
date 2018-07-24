@@ -42,13 +42,13 @@ public class Book {
     public Book(String name, float price, int quantity) throws ValidationException {
         this();
         validateParams(name, price, quantity);
-        setName(name);
-        setPrice(price);
-        setQuantity(quantity);
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
     }
 
     public static boolean isNameValid(String name) {
-        return (name.matches(VALIDATION_REGEX) && name != null);
+        return name.matches(VALIDATION_REGEX);
     }
 
     @JsonIgnore
@@ -73,7 +73,7 @@ public class Book {
     }
 
     public void setName(String name) {
-//        validateName(name);
+        validateName(name);
         this.name = name;
     }
 
@@ -82,7 +82,7 @@ public class Book {
     }
 
     public void setQuantity(int quantity) {
-//        validateCount(quantity);
+        validateQuantity(quantity);
         this.quantity = quantity;
     }
 
@@ -91,18 +91,28 @@ public class Book {
     }
 
     public void setPrice(float price) {
-//        validatePrice(price);
+        validatePrice(price);
         this.price = price;
     }
 
-    private void validateParams(String name, float price, int count) throws ValidationException {
+    private void validateName(String name) {
         if (!isNameValid(name))
             throw new ValidationException("Book name is not valid");
+    }
 
+    private void validatePrice(float price) {
         if (price < 0)
-            throw new ValidationException("Book price can't be less than 0");
-
-        if (count < 0)
             throw new ValidationException("Book quantity can't be less than 0");
+    }
+
+    private void validateQuantity(int quantity) {
+        if (quantity < 0)
+            throw new ValidationException("Book quantity can't be less than 0");
+    }
+
+    private void validateParams(String name, float price, int quantity) throws ValidationException {
+        validateName(name);
+        validatePrice(price);
+        validateQuantity(quantity);
     }
 }
