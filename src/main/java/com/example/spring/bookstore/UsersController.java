@@ -1,5 +1,6 @@
 package com.example.spring.bookstore;
 
+import com.example.spring.bookstore.db.order.OrdersRepository;
 import com.example.spring.bookstore.db.user.User;
 import com.example.spring.bookstore.db.user.UsersRepository;
 import org.slf4j.Logger;
@@ -18,10 +19,12 @@ public class UsersController {
 
     private final Logger log = LoggerFactory.getLogger(UsersController.class);
     private final UsersRepository usersRepository;
+    private final OrdersRepository ordersRepository;
 
-    public UsersController(UsersRepository usersRepository) {
-        // Getting usersRepository
+    public UsersController(UsersRepository usersRepository, OrdersRepository ordersRepository) {
+        // Getting usersRepository and ordersRepository
         this.usersRepository = usersRepository;
+        this.ordersRepository = ordersRepository;
         // Filling it with some users
         fillUsersRepository();
     }
@@ -69,6 +72,23 @@ public class UsersController {
             log.info("Get user: {}", user.get().getName());
             // Return the user
             return ResponseEntity.ok(user);
+        } else {
+            log.info("User with id:{} not found", id);
+            // If user doesn't exist respond with 404
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Getting all user orders
+    // example: GET /api/users/11/orders
+    @GetMapping("/{id}/orders")
+    public ResponseEntity<Object> getOrdersByUserId(@PathVariable Long id) {
+        // Getting user from repo
+        Optional<User> user = usersRepository.findById(id);
+        // If the user exists
+        if (user.isPresent()) {
+            // Return the user orders
+            return ResponseEntity.ok(ordersRepository.getOrdersByUserId(user.get().getId()));
         } else {
             log.info("User with id:{} not found", id);
             // If user doesn't exist respond with 404
