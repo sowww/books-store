@@ -1,5 +1,7 @@
 package com.example.spring.bookstore.errors;
 
+import org.springframework.validation.Errors;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,5 +24,15 @@ public class FieldErrorsView {
 
     public List<FieldError> getFieldErrors() {
         return fieldErrors;
+    }
+
+    public void addErrors(Errors errors) {
+        for (org.springframework.validation.FieldError fieldError : errors.getFieldErrors()) {
+            addError(
+                    fieldError.getField(),
+                    fieldError.getDefaultMessage(),
+                    fieldError.getRejectedValue()
+            );
+        }
     }
 }
