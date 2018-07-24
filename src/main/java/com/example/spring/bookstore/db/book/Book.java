@@ -15,17 +15,19 @@ import java.util.Set;
 @Table(name = "Books")
 public class Book {
 
+    private static final String VALIDATION_REGEX = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
+
     @Id
     @GeneratedValue
     private Long id;
 
     @NotBlank(message = "Name can't be blank")
-    @Pattern(regexp = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*", message = "Book name is not valid")
+    @Pattern(regexp = VALIDATION_REGEX, message = "Book name is not valid")
     private String name;
 
-    @NotNull(message = "Count can't be null")
-    @Min(value = 0, message = "Count can't be less than 0")
-    private int count;
+    @NotNull(message = "Quantity can't be null")
+    @Min(value = 0, message = "Quantity can't be less than 0")
+    private int quantity;
 
     @NotNull(message = "Price can't be null")
     @Min(value = 0, message = "Price can't be less than 0")
@@ -37,17 +39,16 @@ public class Book {
     private Book() {
     }
 
-    public Book(String name, float price, int count) throws ValidationException {
+    public Book(String name, float price, int quantity) throws ValidationException {
         this();
-        validateParams(name, price, count);
+        validateParams(name, price, quantity);
         setName(name);
         setPrice(price);
-        setCount(count);
+        setQuantity(quantity);
     }
 
     public static boolean isNameValid(String name) {
-        String validationRegex = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
-        return (name.matches(validationRegex) && name != null);
+        return (name.matches(VALIDATION_REGEX) && name != null);
     }
 
     @JsonIgnore
@@ -76,13 +77,13 @@ public class Book {
         this.name = name;
     }
 
-    public int getCount() {
-        return count;
+    public int getQuantity() {
+        return quantity;
     }
 
-    public void setCount(int count) {
-//        validateCount(count);
-        this.count = count;
+    public void setQuantity(int quantity) {
+//        validateCount(quantity);
+        this.quantity = quantity;
     }
 
     public float getPrice() {
@@ -102,6 +103,6 @@ public class Book {
             throw new ValidationException("Book price can't be less than 0");
 
         if (count < 0)
-            throw new ValidationException("Book count can't be less than 0");
+            throw new ValidationException("Book quantity can't be less than 0");
     }
 }
