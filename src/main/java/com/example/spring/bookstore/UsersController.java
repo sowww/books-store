@@ -1,5 +1,7 @@
 package com.example.spring.bookstore;
 
+import com.example.spring.bookstore.db.order.Order;
+import com.example.spring.bookstore.db.order.OrderView;
 import com.example.spring.bookstore.db.order.OrdersRepository;
 import com.example.spring.bookstore.db.user.User;
 import com.example.spring.bookstore.db.user.UsersRepository;
@@ -11,7 +13,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/users")
@@ -87,8 +91,14 @@ public class UsersController {
         Optional<User> user = usersRepository.findById(id);
         // If the user exists
         if (user.isPresent()) {
-            // Return the user orders
-            return ResponseEntity.ok(ordersRepository.getOrdersByUserId(user.get().getId()));
+            // Creating order views set
+            Set<OrderView> orderViews = new HashSet<>();
+            // And filling it
+            for (Order order : ordersRepository.getOrdersByUserId(user.get().getId())) {
+                orderViews.add(OrderView.fromOrder(order));
+            }
+            // Return the order views
+            return ResponseEntity.ok(orderViews);
         } else {
             log.info("User with id:{} not found", id);
             // If user doesn't exist respond with 404
