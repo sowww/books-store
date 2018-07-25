@@ -1,6 +1,4 @@
-package com.example.spring.bookstore.db.order;
-
-import com.example.spring.bookstore.db.user.User;
+package com.example.spring.bookstore.data.entity;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -17,7 +15,7 @@ public class Order {
     private User user;
     private float totalPayment;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "view", cascade = CascadeType.ALL)
     private Set<OrderItem> orderItems;
 
     //    private HashSet<Long> bookIds;

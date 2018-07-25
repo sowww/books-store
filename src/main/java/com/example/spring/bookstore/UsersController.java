@@ -1,10 +1,10 @@
 package com.example.spring.bookstore;
 
-import com.example.spring.bookstore.db.order.Order;
-import com.example.spring.bookstore.db.order.OrderView;
-import com.example.spring.bookstore.db.order.OrdersRepository;
-import com.example.spring.bookstore.db.user.User;
-import com.example.spring.bookstore.db.user.UsersRepository;
+import com.example.spring.bookstore.data.entity.Order;
+import com.example.spring.bookstore.data.entity.User;
+import com.example.spring.bookstore.data.repository.OrdersRepository;
+import com.example.spring.bookstore.data.repository.UsersRepository;
+import com.example.spring.bookstore.data.view.OrderView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -91,13 +91,13 @@ public class UsersController {
         Optional<User> user = usersRepository.findById(id);
         // If the user exists
         if (user.isPresent()) {
-            // Creating order views set
+            // Creating view views set
             Set<OrderView> orderViews = new HashSet<>();
             // And filling it
             for (Order order : ordersRepository.getOrdersByUserId(user.get().getId())) {
                 orderViews.add(OrderView.fromOrder(order));
             }
-            // Return the order views
+            // Return the view views
             return ResponseEntity.ok(orderViews);
         } else {
             log.info("User with id:{} not found", id);

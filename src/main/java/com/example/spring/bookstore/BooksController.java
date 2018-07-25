@@ -1,7 +1,7 @@
 package com.example.spring.bookstore;
 
-import com.example.spring.bookstore.db.book.Book;
-import com.example.spring.bookstore.db.book.BooksRepository;
+import com.example.spring.bookstore.data.entity.Book;
+import com.example.spring.bookstore.data.repository.BooksRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.BookRequest;
 import org.slf4j.Logger;

@@ -1,6 +1,6 @@
 package com.example.spring.bookstore.request.objects;
 
-import com.example.spring.bookstore.db.book.Book;
+import com.example.spring.bookstore.data.entity.Book;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;

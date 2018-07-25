@@ -1,6 +1,5 @@
-package com.example.spring.bookstore.db.user;
+package com.example.spring.bookstore.data.entity;
 
-import com.example.spring.bookstore.db.order.Order;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;

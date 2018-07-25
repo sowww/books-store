@@ -1,12 +1,12 @@
 package com.example.spring.bookstore.services;
 
-import com.example.spring.bookstore.db.book.Book;
-import com.example.spring.bookstore.db.book.BooksRepository;
-import com.example.spring.bookstore.db.order.Order;
-import com.example.spring.bookstore.db.order.OrderItem;
-import com.example.spring.bookstore.db.order.OrdersRepository;
-import com.example.spring.bookstore.db.user.User;
-import com.example.spring.bookstore.db.user.UsersRepository;
+import com.example.spring.bookstore.data.entity.Book;
+import com.example.spring.bookstore.data.entity.Order;
+import com.example.spring.bookstore.data.entity.OrderItem;
+import com.example.spring.bookstore.data.entity.User;
+import com.example.spring.bookstore.data.repository.BooksRepository;
+import com.example.spring.bookstore.data.repository.OrdersRepository;
+import com.example.spring.bookstore.data.repository.UsersRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.BookItem;
 import com.example.spring.bookstore.request.objects.OrderRequest;
@@ -46,7 +46,7 @@ public class OrderService {
             if (bookIds.contains(bookItem.getBookId())) {
                 FieldErrorsView errorsView = new FieldErrorsView(
                         "books",
-                        "Book ids are not unique",
+                        "Book id is not unique",
                         bookItem.getBookId()
                 );
                 throw new OrderServiceFieldException(errorsView);
@@ -79,17 +79,17 @@ public class OrderService {
 
         Optional<Order> order = ordersRepository.findById(id);
 
-        // Checking if order with this id exists
+        // Checking if view with this id exists
         if (order.isPresent()) {
-            // If order exists checking if it's not paid already (PENDING)
+            // If view exists checking if it's not paid already (PENDING)
             if (order.get().getStatus() == Order.Status.PENDING) {
                 // If status is PENDING then set it to PAID
                 order.get().setStatus(Order.Status.PAID);
-                // Save edited order in repo
+                // Save edited view in repo
                 ordersRepository.save(order.get());
                 return order.get();
             } else {
-                // else order was already paid
+                // else view was already paid
                 FieldErrorsView fieldErrorsView = new FieldErrorsView(
                         "id",
                         "Order status was already PAID",
@@ -98,7 +98,7 @@ public class OrderService {
                 throw new OrderServiceFieldException(fieldErrorsView);
             }
         } else {
-            // If order doesn't exists then response with (404) Not Found
+            // If view doesn't exists then response with (404) Not Found
             FieldErrorsView fieldErrorsView = new FieldErrorsView(
                     "id",
                     "Order with this id doesn't exist",
@@ -132,7 +132,6 @@ public class OrderService {
     public void deleteById(Long id) {
         ordersRepository.deleteById(id);
     }
-
 
     public class OrderServiceFieldException extends Exception {
         private FieldErrorsView errorsView;

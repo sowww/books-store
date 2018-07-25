@@ -1,7 +1,7 @@
 package com.example.spring.bookstore;
 
-import com.example.spring.bookstore.db.order.Order;
-import com.example.spring.bookstore.db.order.OrderView;
+import com.example.spring.bookstore.data.entity.Order;
+import com.example.spring.bookstore.data.view.OrderView;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.OrderRequest;
 import com.example.spring.bookstore.services.OrderService;
@@ -31,7 +31,7 @@ public class OrdersController {
         this.orderService = orderService;
     }
 
-    // Creating a new order
+    // Creating a new view
     // example: POST /api/orders
     @PostMapping(value = "", produces = "application/json")
     public ResponseEntity<Object> createNewOrder(@Valid @RequestBody OrderRequest orderRequest, Errors errors) {
@@ -51,7 +51,7 @@ public class OrdersController {
         }
     }
 
-    // Setting existing order status to PAID
+    // Setting existing view status to PAID
     // example: POST /api/orders/12/pay
     @PostMapping(value = "/{id}/pay")
     public ResponseEntity<Object> orderSetPaidById(@PathVariable Long id) {
@@ -78,18 +78,18 @@ public class OrdersController {
         return ResponseEntity.ok(orderViews);
     }
 
-    // Getting an order by Id
+    // Getting an view by Id
     // example: GET /api/orders/12
     @GetMapping(value = "/{id}")
     public ResponseEntity<Object> getOrderById(@PathVariable Long id) {
-        log.info("Getting order by id: {}", id);
+        log.info("Getting view by id: {}", id);
 
-        // Getting an order from service
+        // Getting an view from service
         Optional<Order> order = orderService.getById(id);
 
-        // If the order exists
+        // If the view exists
         if (order.isPresent()) {
-            // returning the order
+            // returning the view
             return ResponseEntity.ok(OrderView.fromOrder(order.get()));
         } else {
             // else
@@ -114,15 +114,15 @@ public class OrdersController {
 
     }
 
-    // Deleting order by id
+    // Deleting view by id
     // example: DELETE /api/orders/12
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Object> deleteOrderById(@PathVariable Long id) {
-        log.info("Deleting order by id: {}", id);
-        // Getting an order from the repo
+        log.info("Deleting view by id: {}", id);
+        // Getting an view from the repo
         Optional<Order> order = orderService.getById(id);
 
-        // Checking if order exists
+        // Checking if view exists
         if (order.isPresent()) {
             // If exists delete it from the repo
             orderService.deleteById(id);

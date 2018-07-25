@@ -1,5 +1,6 @@
-package com.example.spring.bookstore.db.order;
+package com.example.spring.bookstore.data.repository;
 
+import com.example.spring.bookstore.data.entity.Order;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
