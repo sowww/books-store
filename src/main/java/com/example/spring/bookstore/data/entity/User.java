@@ -14,7 +14,7 @@ public class User {
     private Long id;
     private String name;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
     private Set<Order> orders;
 
     private User() {

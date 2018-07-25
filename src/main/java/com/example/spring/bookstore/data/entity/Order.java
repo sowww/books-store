@@ -15,7 +15,7 @@ public class Order {
     private User user;
     private float totalPayment;
 
-    @OneToMany(mappedBy = "view", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private Set<OrderItem> orderItems;
 
     //    private HashSet<Long> bookIds;

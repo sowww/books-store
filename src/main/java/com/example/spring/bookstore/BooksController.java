@@ -1,9 +1,9 @@
 package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.data.entity.Book;
-import com.example.spring.bookstore.data.repository.BookRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.BookRequest;
+import com.example.spring.bookstore.services.BookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,38 +19,36 @@ import java.util.Optional;
 public class BooksController {
 
     private final Logger log = LoggerFactory.getLogger(BooksController.class);
-    private final BookRepository bookRepository;
+    private final BookService bookService;
 
-    public BooksController(BookRepository bookRepository) {
+    public BooksController(BookService bookService) {
         // Getting booksRepository
-        this.bookRepository = bookRepository;
+        this.bookService = bookService;
     }
 
     // Creating a new book with params
     // example: POST /api/books
     @PostMapping(value = "")
     public ResponseEntity<Object> addNewBook(@Valid @RequestBody BookRequest bookRequest, Errors errors) {
-
+        // If there are non-valid props
         if (errors.hasErrors()) {
+            // Creating our view from errors
             FieldErrorsView fieldErrorsView = new FieldErrorsView();
             fieldErrorsView.addErrors(errors);
             log.info("POST /api/books errors count: {}", errors.getErrorCount());
+            // End response with it
             return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
-
-        Book book = bookRequest.toBook();
-        bookRepository.save(book);
-        return new ResponseEntity<>(book, HttpStatus.CREATED);
+        // Else add the new book and response with it
+        return new ResponseEntity<>(bookService.addBook(bookRequest), HttpStatus.CREATED);
     }
 
     // Getting all books
     // example: GET /api/books
     @GetMapping(value = {"", "/"})
     public ResponseEntity<Object> getAllBooks() {
-        // Finding all books
-        Iterable<Book> books = bookRepository.findAll();
-        log.info("Get all books: {}", books.spliterator().getExactSizeIfKnown());
-        return ResponseEntity.ok(books);
+        // Getting books from service and response with it
+        return ResponseEntity.ok(bookService.getAll());
     }
 
     // Getting book by id
@@ -59,8 +57,8 @@ public class BooksController {
     public ResponseEntity<Object> getBookById(@PathVariable Long id) {
         log.info("Getting book by id: {}", id);
 
-        // Getting a book from repo
-        Optional<Book> book = bookRepository.findById(id);
+        // Getting a book from service
+        Optional<Book> book = bookService.getById(id);
 
         // If the book exists
         if (book.isPresent()) {
@@ -78,20 +76,13 @@ public class BooksController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Object> deleteBookById(@PathVariable Long id) {
         log.info("Delete a book by id: {}", id);
-
-        // Getting the book from repo
-        Optional<Book> book = bookRepository.findById(id);
-
-        // Checking if the book exists
-        if (book.isPresent()) {
-            // If the book exists
-            bookRepository.deleteById(id);
-            log.info("Book with id:{} deleted", id);
-            // Return proper response
-            return ResponseEntity.ok().build();
-        } else {
-            log.info("Book with id:{} not found", id);
-            // Return 404
+        try {
+            // Trying to delete book
+            bookService.deleteById(id);
+            // If everything is fine, then response with (204) "No Content"
+            return ResponseEntity.noContent().build();
+        } catch (BookService.BookNotExistException e) {
+            // If we got exception, then response with (404) "Not Found"
             return ResponseEntity.notFound().build();
         }
     }

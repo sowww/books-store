@@ -32,7 +32,7 @@ public class Book {
     @Min(value = 0, message = "Price can't be less than 0")
     private float price;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.PERSIST)
     private Set<OrderItem> orderItems;
 
     private Book() {

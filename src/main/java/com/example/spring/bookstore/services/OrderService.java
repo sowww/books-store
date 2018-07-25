@@ -13,6 +13,8 @@ import com.example.spring.bookstore.request.objects.OrderRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -35,25 +37,60 @@ public class OrderService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public Order createOrder(OrderRequest orderRequest) throws OrderServiceFieldException {
 
+        // Creating new Order object
         Order order = new Order();
-
+        // Creating empty set of OrderItems
         Set<OrderItem> orderItems = new HashSet<>();
+        // Creating variable to calculate totalPayment
         float sum = 0;
+        // Crating set of ids to track bookIds (to prevent duplicates)
         Set<Long> bookIds = new HashSet<>();
+
+        // Parsing bookItems from order request
         for (BookItem bookItem : orderRequest.getBooks()) {
+
+            // If bookId is in set already
             if (bookIds.contains(bookItem.getBookId())) {
+                // It is duplicate
+                // Creating errorView
                 FieldErrorsView errorsView = new FieldErrorsView(
                         "books",
                         "Book id is not unique",
                         bookItem.getBookId()
                 );
+                // Throwing it with exception
                 throw new OrderServiceFieldException(errorsView);
             } else {
+                // If bookIs wasn't in set then add it in set
                 bookIds.add(bookItem.getBookId());
             }
+
+            // Getting book from repo by id
             Book book = bookRepository.findById(bookItem.getBookId()).get();
+            // Getting
+            int booksInStock = book.getQuantity();
+            int booksNeeded = bookItem.getQuantity();
+            if (booksInStock >= booksNeeded) {
+                book.setQuantity(booksInStock - booksNeeded);
+                bookRepository.save(book);
+                log.info(
+                        "Book {} new quantity: {} - {} = {}",
+                        bookItem.getBookId(),
+                        booksInStock,
+                        booksNeeded,
+                        booksInStock - booksNeeded
+                );
+            } else {
+                FieldErrorsView errorsView = new FieldErrorsView(
+                        "quantity",
+                        "We doesn't have enough books with id:" + bookItem.getBookId(),
+                        booksNeeded
+                );
+                throw new OrderServiceFieldException(errorsView);
+            }
             sum += book.getPrice() * bookItem.getQuantity();
             orderItems.add(new OrderItem(book, order, bookItem.getQuantity()));
         }
@@ -67,6 +104,7 @@ public class OrderService {
             throw new OrderServiceFieldException(errorsView);
         }
         User user = userRepository.findById(userId).get();
+
         order.setTotalPayment(sum);
         order.setStatus(Order.Status.PENDING);
         order.setOrderItems(orderItems);
@@ -79,17 +117,17 @@ public class OrderService {
 
         Optional<Order> order = orderRepository.findById(id);
 
-        // Checking if view with this id exists
+        // Checking if order with this id exists
         if (order.isPresent()) {
-            // If view exists checking if it's not paid already (PENDING)
+            // If order exists checking if it's not paid already (PENDING)
             if (order.get().getStatus() == Order.Status.PENDING) {
                 // If status is PENDING then set it to PAID
                 order.get().setStatus(Order.Status.PAID);
-                // Save edited view in repo
+                // Save edited order in repo
                 orderRepository.save(order.get());
                 return order.get();
             } else {
-                // else view was already paid
+                // else order was already paid
                 FieldErrorsView fieldErrorsView = new FieldErrorsView(
                         "id",
                         "Order status was already PAID",
@@ -98,7 +136,7 @@ public class OrderService {
                 throw new OrderServiceFieldException(fieldErrorsView);
             }
         } else {
-            // If view doesn't exists then response with (404) Not Found
+            // If order doesn't exists then response with (404) Not Found
             FieldErrorsView fieldErrorsView = new FieldErrorsView(
                     "id",
                     "Order with this id doesn't exist",
@@ -129,8 +167,34 @@ public class OrderService {
         }
     }
 
-    public void deleteById(Long id) {
-        orderRepository.deleteById(id);
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void deleteById(Long id) throws OrderNotExistException {
+        if (orderRepository.existsById(id)) {
+            Order order = orderRepository.findById(id).get();
+            Set<OrderItem> orderItems = order.getOrderItems();
+            for (OrderItem orderItem : orderItems) {
+                Long bookId = orderItem.getBook().getId();
+                if (bookRepository.existsById(bookId)) {
+                    Book book = bookRepository.findById(bookId).get();
+                    int booksIsStock = book.getQuantity();
+                    int bookNewQuantity = booksIsStock + orderItem.getQuantity();
+                    book.setQuantity(bookNewQuantity);
+                    log.info(
+                            "Book {} new quantity: {} + {} = {}",
+                            bookId,
+                            booksIsStock,
+                            orderItem.getQuantity(),
+                            bookNewQuantity
+                    );
+                    bookRepository.save(book);
+                } else {
+                    log.info("Book {} doesn't exist", bookId);
+                }
+            }
+            orderRepository.deleteById(id);
+        } else {
+            throw new OrderNotExistException();
+        }
     }
 
     public class OrderServiceFieldException extends Exception {
@@ -142,6 +206,12 @@ public class OrderService {
 
         public FieldErrorsView getErrorsView() {
             return errorsView;
+        }
+    }
+
+    public class OrderNotExistException extends Exception {
+        OrderNotExistException() {
+            super("Order doesn't exist");
         }
     }
 

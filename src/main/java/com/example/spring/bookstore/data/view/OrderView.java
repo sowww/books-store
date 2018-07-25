@@ -78,4 +78,12 @@ public class OrderView {
         orderView.status = order.getStatus();
         return orderView;
     }
+
+    public static Iterable<OrderView> fromOrders(Iterable<Order> orders) {
+        Iterable<OrderView> orderViews = new HashSet<>();
+        for (Order order : orders) {
+            ((HashSet<OrderView>) orderViews).add(fromOrder(order));
+        }
+        return orderViews;
+    }
 }
