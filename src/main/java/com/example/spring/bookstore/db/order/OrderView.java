@@ -1,6 +1,6 @@
 package com.example.spring.bookstore.db.order;
 
-import com.example.spring.bookstore.db.book.BookItem;
+import com.example.spring.bookstore.request.objects.BookItem;
 
 import java.util.HashSet;
 import java.util.Set;

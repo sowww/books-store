@@ -1,4 +1,4 @@
-package com.example.spring.bookstore.db.book;
+package com.example.spring.bookstore.request.objects;
 
 public class BookItem {
     private Long bookId;

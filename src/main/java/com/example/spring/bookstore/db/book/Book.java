@@ -15,7 +15,7 @@ import java.util.Set;
 @Table(name = "Books")
 public class Book {
 
-    private static final String VALIDATION_REGEX = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
+    public static final String VALIDATION_REGEX = "[a-zA-Z0-9]+[\\s+[a-zA-Z0-9,.]*]*";
 
     @Id
     @GeneratedValue

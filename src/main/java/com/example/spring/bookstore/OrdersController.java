@@ -1,12 +1,16 @@
 package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.db.book.Book;
-import com.example.spring.bookstore.db.book.BookItem;
 import com.example.spring.bookstore.db.book.BooksRepository;
-import com.example.spring.bookstore.db.order.*;
+import com.example.spring.bookstore.db.order.Order;
+import com.example.spring.bookstore.db.order.OrderItem;
+import com.example.spring.bookstore.db.order.OrderView;
+import com.example.spring.bookstore.db.order.OrdersRepository;
 import com.example.spring.bookstore.db.user.User;
 import com.example.spring.bookstore.db.user.UsersRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
+import com.example.spring.bookstore.request.objects.BookItem;
+import com.example.spring.bookstore.request.objects.OrderRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
