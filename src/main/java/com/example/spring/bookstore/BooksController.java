@@ -12,7 +12,6 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import java.util.Optional;
 
 @RestController
@@ -25,27 +24,6 @@ public class BooksController {
     public BooksController(BooksRepository booksRepository) {
         // Getting booksRepository
         this.booksRepository = booksRepository;
-        // Filling it with books
-        fillBooksRepository();
-    }
-
-    // Fills BooksRepository with dummy books
-    private void fillBooksRepository() {
-        for (int i = 1; i <= 10; i++) {
-
-            String bookName = "Book " + i;
-            int price = 100;
-            int count = 1;
-
-            try {
-                Book book = new Book(bookName, price, count);
-                booksRepository.save(book);
-                log.info("Book name: '{}' price: {} count: {}", bookName, price, count);
-            } catch (ValidationException e) {
-                log.info(e.getMessage());
-            }
-
-        }
     }
 
     // Creating a new book with params

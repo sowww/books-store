@@ -1,16 +1,11 @@
 package com.example.spring.bookstore;
 
-import com.example.spring.bookstore.db.book.Book;
-import com.example.spring.bookstore.db.book.BooksRepository;
 import com.example.spring.bookstore.db.order.Order;
-import com.example.spring.bookstore.db.order.OrderItem;
 import com.example.spring.bookstore.db.order.OrderView;
-import com.example.spring.bookstore.db.order.OrdersRepository;
-import com.example.spring.bookstore.db.user.User;
-import com.example.spring.bookstore.db.user.UsersRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
-import com.example.spring.bookstore.request.objects.BookItem;
 import com.example.spring.bookstore.request.objects.OrderRequest;
+import com.example.spring.bookstore.services.OrderService;
+import com.example.spring.bookstore.services.OrderService.OrderServiceFieldException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -28,17 +23,12 @@ import java.util.Set;
 public class OrdersController {
 
     private final Logger log = LoggerFactory.getLogger(OrdersController.class);
-    private final OrdersRepository ordersRepository;
-    private final BooksRepository booksRepository;
-    private final UsersRepository usersRepository;
 
-    public OrdersController(OrdersRepository ordersRepository,
-                            BooksRepository booksRepository,
-                            UsersRepository usersRepository) {
+    private final OrderService orderService;
+
+    public OrdersController(OrderService orderService) {
         // Getting repos
-        this.ordersRepository = ordersRepository;
-        this.booksRepository = booksRepository;
-        this.usersRepository = usersRepository;
+        this.orderService = orderService;
     }
 
     // Creating a new order
@@ -52,22 +42,13 @@ public class OrdersController {
             log.info("POST /api/orders errors count: {}", errors.getErrorCount());
             return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
-        Order order = new Order();
 
-        Set<OrderItem> orderItems = new HashSet<>();
-        float sum = 0;
-        for (BookItem bookItem : orderRequest.getBooks()) {
-            Book book = booksRepository.findById(bookItem.getBookId()).get();
-            sum += book.getPrice() * bookItem.getQuantity();
-            orderItems.add(new OrderItem(book, order, bookItem.getQuantity()));
+        try {
+            Order order = orderService.createOrder(orderRequest);
+            return ResponseEntity.ok(OrderView.fromOrder(order));
+        } catch (OrderServiceFieldException e) {
+            return new ResponseEntity<>(e.getErrorsView(), HttpStatus.BAD_REQUEST);
         }
-        User user = usersRepository.findById(orderRequest.getUserId()).get();
-        order.setTotalPayment(sum);
-        order.setStatus(Order.Status.PENDING);
-        order.setOrderItems(orderItems);
-        order.setUser(user);
-        ordersRepository.save(order);
-        return ResponseEntity.ok(OrderView.fromOrder(order));
     }
 
     // Setting existing order status to PAID
@@ -75,34 +56,11 @@ public class OrdersController {
     @PostMapping(value = "/{id}/pay")
     public ResponseEntity<Object> orderSetPaidById(@PathVariable Long id) {
 
-        Optional<Order> order = ordersRepository.findById(id);
-
-        // Checking if order with this id exists
-        if (order.isPresent()) {
-            // If order exists checking if it's not paid already (PENDING)
-            if (order.get().getStatus() == Order.Status.PENDING) {
-                // If status is PENDING then set it to PAID
-                order.get().setStatus(Order.Status.PAID);
-                // Save edited order in repo
-                ordersRepository.save(order.get());
-                return ResponseEntity.ok(order.get());
-            } else {
-                // else order was already paid
-                FieldErrorsView fieldErrorsView = new FieldErrorsView(
-                        "id",
-                        "Order status was already PAID",
-                        id
-                );
-                return new ResponseEntity<>(fieldErrorsView, HttpStatus.FORBIDDEN);
-            }
-        } else {
-            // If order doesn't exists then response with (404) Not Found
-            FieldErrorsView fieldErrorsView = new FieldErrorsView(
-                    "id",
-                    "Order with this id doesn't exist",
-                    id
-            );
-            return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
+        try {
+            Order order = orderService.orderSetPaidById(id);
+            return ResponseEntity.ok(OrderView.fromOrder(order));
+        } catch (OrderServiceFieldException e) {
+            return new ResponseEntity<>(e.getErrorsView(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -111,8 +69,8 @@ public class OrdersController {
     @GetMapping(value = {"", "/"})
     public ResponseEntity<Object> getAllOrders() {
         // Getting all orders from repo
-        Iterable<Order> orders = ordersRepository.findAll();
-        log.info("Get all orders: {}", orders.spliterator().getExactSizeIfKnown());
+//        Iterable<Order> orders = ordersRepository.findAll();
+        Iterable<Order> orders = orderService.getAllOrders();
         Set<OrderView> orderViews = new HashSet<>();
         for (Order order : orders) {
             orderViews.add(OrderView.fromOrder(order));
@@ -126,8 +84,8 @@ public class OrdersController {
     public ResponseEntity<Object> getOrderById(@PathVariable Long id) {
         log.info("Getting order by id: {}", id);
 
-        // Getting an order from repo
-        Optional<Order> order = ordersRepository.findById(id);
+        // Getting an order from service
+        Optional<Order> order = orderService.getById(id);
 
         // If the order exists
         if (order.isPresent()) {
@@ -147,19 +105,13 @@ public class OrdersController {
     public ResponseEntity<Object> getOrderByUserId(@RequestParam Long userId) {
         log.info("Getting orders by userId: {}", userId);
 
-        // If user exists
-        if (usersRepository.findById(userId).isPresent()) {
-            // Getting an order from repo
-            Iterable<Order> orders = ordersRepository.getOrdersByUserId(userId);
+        try {
+            Iterable<Order> orders = orderService.getOrdersByUserId(userId);
             return ResponseEntity.ok(orders);
-        } else {
-            FieldErrorsView fieldErrorsView = new FieldErrorsView(
-                    "userId",
-                    "User with this id doesn't exist",
-                    userId
-            );
-            return new ResponseEntity<>(fieldErrorsView, HttpStatus.NOT_FOUND);
+        } catch (OrderServiceFieldException e) {
+            return new ResponseEntity<>(e.getErrorsView(), HttpStatus.BAD_REQUEST);
         }
+
     }
 
     // Deleting order by id
@@ -168,12 +120,12 @@ public class OrdersController {
     public ResponseEntity<Object> deleteOrderById(@PathVariable Long id) {
         log.info("Deleting order by id: {}", id);
         // Getting an order from the repo
-        Optional<Order> order = ordersRepository.findById(id);
+        Optional<Order> order = orderService.getById(id);
 
         // Checking if order exists
         if (order.isPresent()) {
             // If exists delete it from the repo
-            ordersRepository.deleteById(id);
+            orderService.deleteById(id);
             // and then returning (204) No Content
             return ResponseEntity.noContent().build();
         } else {
