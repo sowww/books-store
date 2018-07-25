@@ -1,7 +1,12 @@
 package com.example.spring.bookstore.request.objects;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 public class BookItem {
+    @NotNull
     private Long bookId;
+    @Min(0)
     private int quantity;
 
     public BookItem(Long bookId, int quantity) {

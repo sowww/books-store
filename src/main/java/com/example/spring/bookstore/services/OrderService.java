@@ -41,7 +41,18 @@ public class OrderService {
 
         Set<OrderItem> orderItems = new HashSet<>();
         float sum = 0;
+        Set<Long> bookIds = new HashSet<>();
         for (BookItem bookItem : orderRequest.getBooks()) {
+            if (bookIds.contains(bookItem.getBookId())) {
+                FieldErrorsView errorsView = new FieldErrorsView(
+                        "books",
+                        "Book ids are not unique",
+                        bookItem.getBookId()
+                );
+                throw new OrderServiceFieldException(errorsView);
+            } else {
+                bookIds.add(bookItem.getBookId());
+            }
             Book book = booksRepository.findById(bookItem.getBookId()).get();
             sum += book.getPrice() * bookItem.getQuantity();
             orderItems.add(new OrderItem(book, order, bookItem.getQuantity()));

@@ -1,9 +1,13 @@
 package com.example.spring.bookstore.request.objects;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 public class OrderRequest {
+    @Valid
     private Set<BookItem> books;
+    @NotNull
     private Long userId;
 
     public OrderRequest() {

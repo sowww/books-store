@@ -27,7 +27,7 @@ public class OrdersController {
     private final OrderService orderService;
 
     public OrdersController(OrderService orderService) {
-        // Getting repos
+        // Getting orderService
         this.orderService = orderService;
     }
 
