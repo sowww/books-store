@@ -4,9 +4,9 @@ import com.example.spring.bookstore.data.entity.Book;
 import com.example.spring.bookstore.data.entity.Order;
 import com.example.spring.bookstore.data.entity.OrderItem;
 import com.example.spring.bookstore.data.entity.User;
-import com.example.spring.bookstore.data.repository.BooksRepository;
-import com.example.spring.bookstore.data.repository.OrdersRepository;
-import com.example.spring.bookstore.data.repository.UsersRepository;
+import com.example.spring.bookstore.data.repository.BookRepository;
+import com.example.spring.bookstore.data.repository.OrderRepository;
+import com.example.spring.bookstore.data.repository.UserRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.BookItem;
 import com.example.spring.bookstore.request.objects.OrderRequest;
@@ -23,16 +23,16 @@ public class OrderService {
 
     private final Logger log = LoggerFactory.getLogger(OrderService.class);
 
-    private final OrdersRepository ordersRepository;
-    private final BooksRepository booksRepository;
-    private final UsersRepository usersRepository;
+    private final OrderRepository orderRepository;
+    private final BookRepository bookRepository;
+    private final UserRepository userRepository;
 
-    public OrderService(OrdersRepository ordersRepository,
-                        BooksRepository booksRepository,
-                        UsersRepository usersRepository) {
-        this.ordersRepository = ordersRepository;
-        this.booksRepository = booksRepository;
-        this.usersRepository = usersRepository;
+    public OrderService(OrderRepository orderRepository,
+                        BookRepository bookRepository,
+                        UserRepository userRepository) {
+        this.orderRepository = orderRepository;
+        this.bookRepository = bookRepository;
+        this.userRepository = userRepository;
     }
 
     public Order createOrder(OrderRequest orderRequest) throws OrderServiceFieldException {
@@ -53,12 +53,12 @@ public class OrderService {
             } else {
                 bookIds.add(bookItem.getBookId());
             }
-            Book book = booksRepository.findById(bookItem.getBookId()).get();
+            Book book = bookRepository.findById(bookItem.getBookId()).get();
             sum += book.getPrice() * bookItem.getQuantity();
             orderItems.add(new OrderItem(book, order, bookItem.getQuantity()));
         }
         Long userId = orderRequest.getUserId();
-        if (!usersRepository.findById(userId).isPresent()) {
+        if (!userRepository.findById(userId).isPresent()) {
             FieldErrorsView errorsView = new FieldErrorsView(
                     "userId",
                     "User doesn't exist",
@@ -66,18 +66,18 @@ public class OrderService {
             );
             throw new OrderServiceFieldException(errorsView);
         }
-        User user = usersRepository.findById(userId).get();
+        User user = userRepository.findById(userId).get();
         order.setTotalPayment(sum);
         order.setStatus(Order.Status.PENDING);
         order.setOrderItems(orderItems);
         order.setUser(user);
-        ordersRepository.save(order);
+        orderRepository.save(order);
         return order;
     }
 
     public Order orderSetPaidById(Long id) throws OrderServiceFieldException {
 
-        Optional<Order> order = ordersRepository.findById(id);
+        Optional<Order> order = orderRepository.findById(id);
 
         // Checking if view with this id exists
         if (order.isPresent()) {
@@ -86,7 +86,7 @@ public class OrderService {
                 // If status is PENDING then set it to PAID
                 order.get().setStatus(Order.Status.PAID);
                 // Save edited view in repo
-                ordersRepository.save(order.get());
+                orderRepository.save(order.get());
                 return order.get();
             } else {
                 // else view was already paid
@@ -109,16 +109,16 @@ public class OrderService {
     }
 
     public Iterable<Order> getAllOrders() {
-        return ordersRepository.findAll();
+        return orderRepository.findAll();
     }
 
     public Optional<Order> getById(Long id) {
-        return ordersRepository.findById(id);
+        return orderRepository.findById(id);
     }
 
     public Iterable<Order> getOrdersByUserId(Long userId) throws OrderServiceFieldException {
-        if (usersRepository.findById(userId).isPresent()) {
-            return ordersRepository.getOrdersByUserId(userId);
+        if (userRepository.findById(userId).isPresent()) {
+            return orderRepository.getOrdersByUserId(userId);
         } else {
             FieldErrorsView errorsView = new FieldErrorsView(
                     "userId",
@@ -130,7 +130,7 @@ public class OrderService {
     }
 
     public void deleteById(Long id) {
-        ordersRepository.deleteById(id);
+        orderRepository.deleteById(id);
     }
 
     public class OrderServiceFieldException extends Exception {

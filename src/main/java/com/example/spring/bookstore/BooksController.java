@@ -1,7 +1,7 @@
 package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.data.entity.Book;
-import com.example.spring.bookstore.data.repository.BooksRepository;
+import com.example.spring.bookstore.data.repository.BookRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.BookRequest;
 import org.slf4j.Logger;
@@ -19,11 +19,11 @@ import java.util.Optional;
 public class BooksController {
 
     private final Logger log = LoggerFactory.getLogger(BooksController.class);
-    private final BooksRepository booksRepository;
+    private final BookRepository bookRepository;
 
-    public BooksController(BooksRepository booksRepository) {
+    public BooksController(BookRepository bookRepository) {
         // Getting booksRepository
-        this.booksRepository = booksRepository;
+        this.bookRepository = bookRepository;
     }
 
     // Creating a new book with params
@@ -39,7 +39,7 @@ public class BooksController {
         }
 
         Book book = bookRequest.toBook();
-        booksRepository.save(book);
+        bookRepository.save(book);
         return new ResponseEntity<>(book, HttpStatus.CREATED);
     }
 
@@ -48,7 +48,7 @@ public class BooksController {
     @GetMapping(value = {"", "/"})
     public ResponseEntity<Object> getAllBooks() {
         // Finding all books
-        Iterable<Book> books = booksRepository.findAll();
+        Iterable<Book> books = bookRepository.findAll();
         log.info("Get all books: {}", books.spliterator().getExactSizeIfKnown());
         return ResponseEntity.ok(books);
     }
@@ -60,7 +60,7 @@ public class BooksController {
         log.info("Getting book by id: {}", id);
 
         // Getting a book from repo
-        Optional<Book> book = booksRepository.findById(id);
+        Optional<Book> book = bookRepository.findById(id);
 
         // If the book exists
         if (book.isPresent()) {
@@ -80,12 +80,12 @@ public class BooksController {
         log.info("Delete a book by id: {}", id);
 
         // Getting the book from repo
-        Optional<Book> book = booksRepository.findById(id);
+        Optional<Book> book = bookRepository.findById(id);
 
         // Checking if the book exists
         if (book.isPresent()) {
             // If the book exists
-            booksRepository.deleteById(id);
+            bookRepository.deleteById(id);
             log.info("Book with id:{} deleted", id);
             // Return proper response
             return ResponseEntity.ok().build();

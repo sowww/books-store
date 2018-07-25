@@ -2,8 +2,8 @@ package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.data.entity.Order;
 import com.example.spring.bookstore.data.entity.User;
-import com.example.spring.bookstore.data.repository.OrdersRepository;
-import com.example.spring.bookstore.data.repository.UsersRepository;
+import com.example.spring.bookstore.data.repository.OrderRepository;
+import com.example.spring.bookstore.data.repository.UserRepository;
 import com.example.spring.bookstore.data.view.OrderView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,45 +22,22 @@ import java.util.Set;
 public class UsersController {
 
     private final Logger log = LoggerFactory.getLogger(UsersController.class);
-    private final UsersRepository usersRepository;
-    private final OrdersRepository ordersRepository;
+    private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
 
-    public UsersController(UsersRepository usersRepository, OrdersRepository ordersRepository) {
+    public UsersController(UserRepository userRepository, OrderRepository orderRepository) {
         // Getting usersRepository and ordersRepository
-        this.usersRepository = usersRepository;
-        this.ordersRepository = ordersRepository;
-        // Filling it with some users
-        fillUsersRepository();
+        this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
     }
 
-    // Fills usersRepository with dummy users
-    private void fillUsersRepository() {
-        final String[] names = {
-                "Yuri",
-                "Ivan",
-                "...$dd",
-                "Petr.Ivanov"
-        };
-
-        // for every name from array
-        for (String name : names) {
-            // Check if name is valid
-            if (User.isUserNameValid(name)) {
-                // If it's valid, then create new user
-                User user = new User(name);
-                // Add him to repo
-                usersRepository.save(user);
-                log.info("User added: id={}, name={}", user.getId(), user.getName());
-            }
-        }
-    }
 
     // Getting all users
     // example: GET /api/users
     @GetMapping(value = {"/", ""})
     public ResponseEntity<Object> getAllUsers() {
         // Get all users from repo
-        Iterable<User> users = usersRepository.findAll();
+        Iterable<User> users = userRepository.findAll();
         log.info("Getting all users");
         return ResponseEntity.ok(users);
     }
@@ -70,7 +47,7 @@ public class UsersController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUserById(@PathVariable Long id) {
         // Getting user from repo
-        Optional<User> user = usersRepository.findById(id);
+        Optional<User> user = userRepository.findById(id);
         // If the user exists
         if (user.isPresent()) {
             log.info("Get user: {}", user.get().getName());
@@ -88,13 +65,13 @@ public class UsersController {
     @GetMapping("/{id}/orders")
     public ResponseEntity<Object> getOrdersByUserId(@PathVariable Long id) {
         // Getting user from repo
-        Optional<User> user = usersRepository.findById(id);
+        Optional<User> user = userRepository.findById(id);
         // If the user exists
         if (user.isPresent()) {
             // Creating view views set
             Set<OrderView> orderViews = new HashSet<>();
             // And filling it
-            for (Order order : ordersRepository.getOrdersByUserId(user.get().getId())) {
+            for (Order order : orderRepository.getOrdersByUserId(user.get().getId())) {
                 orderViews.add(OrderView.fromOrder(order));
             }
             // Return the view views

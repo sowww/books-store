@@ -1,7 +1,7 @@
 package com.example.spring.bookstore.services;
 
 import com.example.spring.bookstore.data.entity.Book;
-import com.example.spring.bookstore.data.repository.BooksRepository;
+import com.example.spring.bookstore.data.repository.BookRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,11 +13,11 @@ public class BookService {
 
     private final Logger log = LoggerFactory.getLogger(BookService.class);
 
-    private final BooksRepository booksRepository;
+    private final BookRepository bookRepository;
 
 
-    public BookService(BooksRepository booksRepository) {
-        this.booksRepository = booksRepository;
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
         // Filling repo with books
         fillBooksRepository();
     }
@@ -32,7 +32,7 @@ public class BookService {
 
             try {
                 Book book = new Book(bookName, price, count);
-                booksRepository.save(book);
+                bookRepository.save(book);
                 log.info("Book name: '{}' price: {} count: {}", bookName, price, count);
             } catch (ValidationException e) {
                 log.info(e.getMessage());
