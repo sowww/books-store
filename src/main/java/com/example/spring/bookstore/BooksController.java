@@ -3,6 +3,7 @@ package com.example.spring.bookstore;
 import com.example.spring.bookstore.db.book.Book;
 import com.example.spring.bookstore.db.book.BooksRepository;
 import com.example.spring.bookstore.errors.FieldErrorsView;
+import com.example.spring.bookstore.request.objects.BookRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -50,7 +51,7 @@ public class BooksController {
     // Creating a new book with params
     // example: POST /api/books
     @PostMapping(value = "")
-    public ResponseEntity<Object> addNewBook(@Valid @RequestBody Book book, Errors errors) {
+    public ResponseEntity<Object> addNewBook(@Valid @RequestBody BookRequest bookRequest, Errors errors) {
 
         if (errors.hasErrors()) {
             FieldErrorsView fieldErrorsView = new FieldErrorsView();
@@ -59,6 +60,7 @@ public class BooksController {
             return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
 
+        Book book = bookRequest.toBook();
         booksRepository.save(book);
         return new ResponseEntity<>(book, HttpStatus.CREATED);
     }
