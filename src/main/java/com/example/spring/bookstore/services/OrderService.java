@@ -16,9 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class OrderService {
@@ -41,10 +39,30 @@ public class OrderService {
     @Transactional(propagation = Propagation.REQUIRED)
     public Order createOrder(OrderRequest orderRequest) throws OrderServiceFieldException {
 
-        // Creating new Order object
+        // Getting a user id from request
+        Long userId = orderRequest.getUserId();
+        // If the user doesn't exist
+        if (!userRepository.findById(userId).isPresent()) {
+            // Creating errorView
+            FieldErrorsView errorsView = new FieldErrorsView(
+                    "userId",
+                    "User doesn't exist",
+                    userId
+            );
+            log.info("Exception: User doesn't exist");
+            // Throw it with OrderServiceFieldException
+            throw new OrderServiceFieldException(errorsView);
+        }
+        // Getting user from repo
+        User user = userRepository.findById(userId).get();
+
+        log.info("Creating a new order");
+        // Creating a new Order object
         Order order = new Order();
         // Creating empty set of OrderItems
         Set<OrderItem> orderItems = new HashSet<>();
+        // Creating a map of book quantity changes
+        Map<Integer, Integer> bookQuantityChanges = new HashMap<>();
         // Creating variable to calculate totalPayment
         float sum = 0;
         // Crating set of ids to track bookIds (to prevent duplicates)
@@ -58,15 +76,27 @@ public class OrderService {
                 // It is duplicate
                 // Creating errorView
                 FieldErrorsView errorsView = new FieldErrorsView(
-                        "books",
+                        "books[]:bookId",
                         "Book id is not unique",
                         bookItem.getBookId()
                 );
+                log.info("Exception: Book id is not unique");
                 // Throwing it with exception
                 throw new OrderServiceFieldException(errorsView);
             } else {
                 // If bookIs wasn't in set then add it in set
                 bookIds.add(bookItem.getBookId());
+            }
+
+            // Checking if book exists
+            if (!bookRepository.findById(bookItem.getBookId()).isPresent()) {
+                FieldErrorsView errorsView = new FieldErrorsView(
+                        "books[]:bookId",
+                        "Book doesn't exist",
+                        bookItem.getBookId()
+                );
+                log.info("Exception: Book doesn't exist");
+                throw new OrderServiceFieldException(errorsView);
             }
 
             // Getting book from repo by id
@@ -77,10 +107,8 @@ public class OrderService {
             int booksNeeded = bookItem.getQuantity();
             // If we have enough books
             if (booksInStock >= booksNeeded) {
-                // Setting new book quantity
-                book.setQuantity(booksInStock - booksNeeded);
-                // Save it to repo
-                bookRepository.save(book);
+                // Save new book quantity to changes map
+                bookQuantityChanges.put(bookItem.getBookId().intValue(), booksInStock - booksNeeded);
                 log.info(
                         "Book {} new quantity: {} - {} = {}",
                         bookItem.getBookId(),
@@ -96,6 +124,7 @@ public class OrderService {
                         "We doesn't have enough books with id:" + bookItem.getBookId(),
                         booksNeeded
                 );
+                log.info("Exception: We doesn't have enough books");
                 // Throw it with OrderServiceFieldException
                 throw new OrderServiceFieldException(errorsView);
             }
@@ -104,21 +133,14 @@ public class OrderService {
             // Adding orderItem to our set
             orderItems.add(new OrderItem(book, order, bookItem.getQuantity()));
         }
-        // Getting a user id from request
-        Long userId = orderRequest.getUserId();
-        // If the user doesn't exist
-        if (!userRepository.findById(userId).isPresent()) {
-            // Creating errorView
-            FieldErrorsView errorsView = new FieldErrorsView(
-                    "userId",
-                    "User doesn't exist",
-                    userId
-            );
-            // Throw it with OrderServiceFieldException
-            throw new OrderServiceFieldException(errorsView);
-        }
-        // Getting user from repo
-        User user = userRepository.findById(userId).get();
+
+        // If everything was ok
+        // apply new quantities to books in repo
+        bookQuantityChanges.forEach((bookId, newQuantity) -> {
+            log.info("Applying new quantity ({}) to book {}", newQuantity, bookId);
+            Book book = bookRepository.findById(Long.valueOf(bookId)).get();
+            book.setQuantity(newQuantity);
+        });
 
         // Forming our new order
         order.setTotalPayment(sum);

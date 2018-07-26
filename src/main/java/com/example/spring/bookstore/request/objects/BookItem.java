@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 public class BookItem {
     @NotNull
     private Long bookId;
-    @Min(0)
+    @Min(1)
     private int quantity;
 
     public BookItem(Long bookId, int quantity) {
