@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class OrderService {
@@ -36,7 +38,10 @@ public class OrderService {
     }
 
     // Creating a new order from order request
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(
+            propagation = Propagation.REQUIRED,
+            rollbackFor = OrderServiceFieldException.class
+    )
     public Order createOrder(OrderRequest orderRequest) throws OrderServiceFieldException {
 
         // Getting a user id from request
@@ -61,8 +66,6 @@ public class OrderService {
         Order order = new Order();
         // Creating empty set of OrderItems
         Set<OrderItem> orderItems = new HashSet<>();
-        // Creating a map of book quantity changes
-        Map<Integer, Integer> bookQuantityChanges = new HashMap<>();
         // Creating variable to calculate totalPayment
         float sum = 0;
         // Crating set of ids to track bookIds (to prevent duplicates)
@@ -91,7 +94,7 @@ public class OrderService {
             // Checking if book exists
             if (!bookRepository.findById(bookItem.getBookId()).isPresent()) {
                 FieldErrorsView errorsView = new FieldErrorsView(
-                        "books[]:bookId",
+                        "books[].bookId",
                         "Book doesn't exist",
                         bookItem.getBookId()
                 );
@@ -107,8 +110,9 @@ public class OrderService {
             int booksNeeded = bookItem.getQuantity();
             // If we have enough books
             if (booksInStock >= booksNeeded) {
-                // Save new book quantity to changes map
-                bookQuantityChanges.put(bookItem.getBookId().intValue(), booksInStock - booksNeeded);
+                // Setting new quantity to the book
+                book.setQuantity(booksInStock - booksNeeded);
+                bookRepository.save(book);
                 log.info(
                         "Book {} new quantity: {} - {} = {}",
                         bookItem.getBookId(),
@@ -133,15 +137,6 @@ public class OrderService {
             // Adding orderItem to our set
             orderItems.add(new OrderItem(book, order, bookItem.getQuantity()));
         }
-
-        // If everything was ok
-        // apply new quantities to books in repo
-        bookQuantityChanges.forEach((bookId, newQuantity) -> {
-            log.info("Applying new quantity ({}) to book {}", newQuantity, bookId);
-            Book book = bookRepository.findById(Long.valueOf(bookId)).get();
-            book.setQuantity(newQuantity);
-        });
-
         // Forming our new order
         order.setTotalPayment(sum);
         order.setStatus(Order.Status.PENDING);
