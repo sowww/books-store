@@ -9,6 +9,8 @@ import java.util.Set;
 @Table(name = "Users")
 public class User {
 
+    public static final String VALIDATION_REGEX = "[a-zA-Z]+[a-zA-Z0-9_\\s.]*";
+
     @Id
     @GeneratedValue
     private Long id;
@@ -26,8 +28,7 @@ public class User {
     }
 
     public static boolean isUserNameValid(String name) {
-        String validationRegex = "[a-zA-Z]+[a-zA-Z0-9_\\s.]*";
-        return name.matches(validationRegex);
+        return name.matches(VALIDATION_REGEX);
     }
 
     public Long getId() {
