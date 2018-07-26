@@ -93,8 +93,7 @@ public class BookApiRequestTest {
         )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name", is("Book 1")))
-                .andExpect(jsonPath("$.price", is(150.0)))
-                .andExpect(jsonPath("$.quantity", is(5)));
+                .andExpect(jsonPath("$.price", is(150.0)));
     }
 
     @Test
