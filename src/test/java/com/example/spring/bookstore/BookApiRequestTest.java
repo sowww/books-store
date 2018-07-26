@@ -1,7 +1,9 @@
 package com.example.spring.bookstore;
 
 import com.example.spring.bookstore.data.entity.Book;
+import com.example.spring.bookstore.request.objects.BookRequest;
 import com.example.spring.bookstore.services.BookService;
+import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,11 +14,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,11 +34,13 @@ public class BookApiRequestTest {
     private BookService bookService;
 
     private Book book1, book2;
+    private Gson gson;
 
     @Before
     public void prepare() {
         book1 = new Book("Book 1", 130, 10);
         book2 = new Book("Book 2", 100, 5);
+        gson = new Gson();
     }
 
     @Test
@@ -70,11 +75,55 @@ public class BookApiRequestTest {
                 .andExpect(status().isNotFound());
     }
 
-//    @Test
-//    public void createBookReturnBookTest() throws Exception {
-//        MockHttpServletRequestBuilder builder =
-//                MockMvcRequestBuilders.post("/api/books")
-//                        .contentType("application/json")
-//                        .requestAttr();
-//    }
+    @Test
+    public void deleteShouldReturnNoContent() throws Exception {
+        mvc.perform(delete("/api/books/1").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void createBookReturnIsCreatedTest() throws Exception {
+        @Valid BookRequest bookRequest = new BookRequest("Book 1", 5, 150.0F);
+        Book book = new Book("Book 1", 150F, 5);
+        when(bookService.addBook(bookRequest)).thenReturn(book);
+        mvc.perform(post("/api/books")
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .content(gson.toJson(bookRequest))
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name", is("Book 1")))
+                .andExpect(jsonPath("$.price", is(150.0)))
+                .andExpect(jsonPath("$.quantity", is(5)));
+    }
+
+    @Test
+    public void creatingBookNonValidNameReturnBadRequest() throws Exception {
+        BookRequest bookRequest = new BookRequest("%&Book 1", 5, 150F);
+        mvc.perform(post("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(bookRequest))
+        )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void creatingBookNonValidQuantityReturnBadRequest() throws Exception {
+        BookRequest bookRequest = new BookRequest("Book 1", -5, 150F);
+        mvc.perform(post("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(bookRequest))
+        )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void creatingBookNonValidPriceReturnBadRequest() throws Exception {
+        BookRequest bookRequest = new BookRequest("Book 1", 5, -150F);
+        mvc.perform(post("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(bookRequest))
+        )
+                .andExpect(status().isBadRequest());
+    }
 }

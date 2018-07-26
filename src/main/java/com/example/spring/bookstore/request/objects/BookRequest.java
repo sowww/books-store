@@ -6,6 +6,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.Objects;
 
 public class BookRequest {
 
@@ -58,5 +59,20 @@ public class BookRequest {
 
     public void setPrice(Float price) {
         this.price = price;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BookRequest that = (BookRequest) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(quantity, that.quantity) &&
+                Objects.equals(price, that.price);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, quantity, price);
     }
 }
