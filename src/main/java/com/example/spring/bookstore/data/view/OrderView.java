@@ -5,6 +5,7 @@ import com.example.spring.bookstore.data.entity.OrderItem;
 import com.example.spring.bookstore.request.objects.BookItem;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class OrderView {
@@ -23,6 +24,28 @@ public class OrderView {
         this.totalPayment = totalPayment;
         this.books = books;
         this.status = status;
+    }
+
+    public static OrderView fromOrder(Order order) {
+        OrderView orderView = new OrderView();
+        orderView.orderId = order.getOrderId();
+        orderView.userId = order.getUser().getId();
+        orderView.totalPayment = order.getTotalPayment();
+        Set<BookItem> bookItems = new HashSet<>();
+        for (OrderItem orderItem : order.getOrderItems())
+            bookItems.add(new BookItem(orderItem.getBook().getId(),
+                    orderItem.getQuantity()));
+        orderView.books = bookItems;
+        orderView.status = order.getStatus();
+        return orderView;
+    }
+
+    public static Iterable<OrderView> fromOrders(Iterable<Order> orders) {
+        Iterable<OrderView> orderViews = new HashSet<>();
+        for (Order order : orders) {
+            ((HashSet<OrderView>) orderViews).add(fromOrder(order));
+        }
+        return orderViews;
     }
 
     public Long getOrderId() {
@@ -65,25 +88,20 @@ public class OrderView {
         this.status = status;
     }
 
-    public static OrderView fromOrder(Order order) {
-        OrderView orderView = new OrderView();
-        orderView.orderId = order.getOrderId();
-        orderView.userId = order.getUser().getId();
-        orderView.totalPayment = order.getTotalPayment();
-        Set<BookItem> bookItems = new HashSet<>();
-        for (OrderItem orderItem : order.getOrderItems())
-            bookItems.add(new BookItem(orderItem.getBook().getId(),
-                    orderItem.getQuantity()));
-        orderView.books = bookItems;
-        orderView.status = order.getStatus();
-        return orderView;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OrderView orderView = (OrderView) o;
+        return Float.compare(orderView.totalPayment, totalPayment) == 0 &&
+                Objects.equals(orderId, orderView.orderId) &&
+                Objects.equals(userId, orderView.userId) &&
+                Objects.equals(books, orderView.books) &&
+                status == orderView.status;
     }
 
-    public static Iterable<OrderView> fromOrders(Iterable<Order> orders) {
-        Iterable<OrderView> orderViews = new HashSet<>();
-        for (Order order : orders) {
-            ((HashSet<OrderView>) orderViews).add(fromOrder(order));
-        }
-        return orderViews;
+    @Override
+    public int hashCode() {
+        return Objects.hash(orderId, userId, totalPayment, books, status);
     }
 }

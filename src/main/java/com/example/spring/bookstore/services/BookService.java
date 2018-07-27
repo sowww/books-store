@@ -18,14 +18,15 @@ public class BookService {
     private final BookRepository bookRepository;
 
     public BookService(BookRepository bookRepository) {
-        // Getting repo
         this.bookRepository = bookRepository;
-        // Filling repo with books
         fillBooksRepository();
     }
 
-    // Fills BooksRepository with dummy books
-    private void fillBooksRepository() {
+
+    /**
+     * Fills BooksRepository with dummy books
+     */
+    public void fillBooksRepository() {
         for (int i = 1; i <= 10; i++) {
 
             String bookName = "Book " + i;
@@ -35,7 +36,7 @@ public class BookService {
             try {
                 Book book = new Book(bookName, price, count);
                 bookRepository.save(book);
-                log.info("Book name: '{}' price: {} count: {}", bookName, price, count);
+                log.info("Book id: {} name: '{}' price: {} count: {}", book.getId(), bookName, price, count);
             } catch (ValidationException e) {
                 log.info(e.getMessage());
             }
@@ -43,33 +44,31 @@ public class BookService {
     }
 
     public Book addBook(@Valid BookRequest bookRequest) {
-        // Just saving the book from request and return it
         return bookRepository.save(bookRequest.toBook());
     }
 
     public Iterable<Book> getAll() {
-        // Just returning all books from repo
         return bookRepository.findAll();
     }
 
+    public void deleteAll() {
+        bookRepository.deleteAll();
+    }
+
     public Optional<Book> getById(Long id) {
-        // Getting the book by id and returning it
         return bookRepository.findById(id);
     }
 
     public void deleteById(Long id) throws BookNotExistException {
-        // Checking if the book exists
         if (bookRepository.existsById(id)) {
-            // If exists then delete it
             bookRepository.deleteById(id);
         } else {
-            // Else throw a BookNotExistException
             throw new BookNotExistException();
         }
     }
 
-    public class BookNotExistException extends Exception {
-        BookNotExistException() {
+    public static class BookNotExistException extends Exception {
+        public BookNotExistException() {
             super("Book doesn't exist");
         }
     }
