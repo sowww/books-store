@@ -26,33 +26,40 @@ public class BooksController {
         this.bookService = bookService;
     }
 
-    // Creating a new book with params
-    // example: POST /api/books
+    /**
+     * Creating a new book with params
+     * <p>example: POST /api/books</p>
+     *
+     * @param bookRequest request with books
+     * @param errors      errors of validator
+     * @return created book response
+     */
     @PostMapping(value = "")
     public ResponseEntity<Object> addNewBook(@Valid @RequestBody BookRequest bookRequest, Errors errors) {
-        // If there are non-valid props
         if (errors.hasErrors()) {
-            // Creating our view from errors
             FieldErrorsView fieldErrorsView = new FieldErrorsView();
             fieldErrorsView.addErrors(errors);
             log.info("POST /api/books errors count: {}", errors.getErrorCount());
-            // End response with it
             return new ResponseEntity<>(fieldErrorsView, HttpStatus.BAD_REQUEST);
         }
-        // Else add the new book and response with it
         return new ResponseEntity<>(bookService.addBook(bookRequest), HttpStatus.CREATED);
     }
 
-    // Getting all books
-    // example: GET /api/books
+    /**
+     * Getting all books
+     * <p>example: GET /api/books</p>
+     */
     @GetMapping(value = {"", "/"})
     public ResponseEntity<Object> getAllBooks() {
-        // Getting books from service and response with it
         return ResponseEntity.ok(bookService.getAll());
     }
 
-    // Getting book by id
-    // example: GET /api/books/5
+    /**
+     * Getting book by id
+     * <p>example: GET /api/books/5</p>
+     *
+     * @param id book id
+     */
     @GetMapping(value = "/{id}")
     public ResponseEntity<Object> getBookById(@PathVariable Long id) {
         log.info("Getting book by id: {}", id);
@@ -71,18 +78,19 @@ public class BooksController {
         }
     }
 
-    // Deleting a book by id
-    // example: DELETE /api/books/5
+    /**
+     * Deleting a book by id
+     * <p>example: DELETE /api/books/5</p>
+     *
+     * @param id book id
+     */
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Object> deleteBookById(@PathVariable Long id) {
         log.info("Delete a book by id: {}", id);
         try {
-            // Trying to delete book
             bookService.deleteById(id);
-            // If everything is fine, then response with (204) "No Content"
             return ResponseEntity.noContent().build();
         } catch (BookService.BookNotExistException e) {
-            // If we got exception, then response with (404) "Not Found"
             return ResponseEntity.notFound().build();
         }
     }

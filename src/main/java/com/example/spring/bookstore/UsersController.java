@@ -29,44 +29,46 @@ public class UsersController {
         this.orderService = orderService;
     }
 
-    // Getting all users
-    // example: GET /api/users
+    /**
+     * Getting all users
+     * <p>example: GET /api/users</p>
+     */
     @GetMapping(value = {"/", ""})
     public ResponseEntity<Object> getAllUsers() {
-        // Getting all users from service and response with them
         return ResponseEntity.ok(userService.getAll());
     }
 
-    // Getting user by id
-    // example: GET /api/users/1
+    /**
+     * Getting user by id
+     * <p>example: GET /api/users/1</p></>
+     *
+     * @param id user id
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUserById(@PathVariable Long id) {
 
-        // Getting the user from service
         Optional<User> user = userService.getById(id);
-        // If the user exists
         if (user.isPresent()) {
             log.info("Get user: {}", user.get().getName());
-            // Return the user
             return ResponseEntity.ok(user);
         } else {
             log.info("User with id:{} not found", id);
-            // If user doesn't exist respond with (404) Not Found
             return ResponseEntity.notFound().build();
         }
     }
 
-    // Getting all user orders
-    // example: GET /api/users/11/orders
+    /**
+     * Getting all user orders
+     * <p>example: GET /api/users/11/orders</p>
+     *
+     * @param id user id
+     */
     @GetMapping("/{id}/orders")
     public ResponseEntity<Object> getOrdersByUserId(@PathVariable Long id) {
         try {
-            // Trying to get orders
             Iterable<Order> orders = orderService.getOrdersByUserId(id);
             return ResponseEntity.ok(OrderView.fromOrders(orders));
         } catch (OrderService.OrderServiceFieldException e) {
-            // if user with this userId doesn't exist
-            // Response with errorView
             return new ResponseEntity<>(e.getErrorsView(), HttpStatus.BAD_REQUEST);
         }
     }
