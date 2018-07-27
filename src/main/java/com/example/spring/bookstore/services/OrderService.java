@@ -186,6 +186,7 @@ public class OrderService {
 
     /**
      * Getting orders by userId
+     *
      * @param userId user id
      * @throws OrderServiceFieldException
      */
@@ -204,6 +205,7 @@ public class OrderService {
 
     /**
      * Deleting an order by id
+     *
      * @param id order id
      * @throws OrderNotExistException
      */

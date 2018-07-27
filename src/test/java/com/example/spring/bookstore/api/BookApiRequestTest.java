@@ -1,5 +1,6 @@
-package com.example.spring.bookstore;
+package com.example.spring.bookstore.api;
 
+import com.example.spring.bookstore.BooksController;
 import com.example.spring.bookstore.data.entity.Book;
 import com.example.spring.bookstore.request.objects.BookRequest;
 import com.example.spring.bookstore.services.BookService;

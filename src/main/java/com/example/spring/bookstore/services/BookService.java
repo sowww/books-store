@@ -26,7 +26,7 @@ public class BookService {
     /**
      * Fills BooksRepository with dummy books
      */
-    private void fillBooksRepository() {
+    public void fillBooksRepository() {
         for (int i = 1; i <= 10; i++) {
 
             String bookName = "Book " + i;
@@ -36,7 +36,7 @@ public class BookService {
             try {
                 Book book = new Book(bookName, price, count);
                 bookRepository.save(book);
-                log.info("Book name: '{}' price: {} count: {}", bookName, price, count);
+                log.info("Book id: {} name: '{}' price: {} count: {}", book.getId(), bookName, price, count);
             } catch (ValidationException e) {
                 log.info(e.getMessage());
             }
@@ -49,6 +49,10 @@ public class BookService {
 
     public Iterable<Book> getAll() {
         return bookRepository.findAll();
+    }
+
+    public void deleteAll() {
+        bookRepository.deleteAll();
     }
 
     public Optional<Book> getById(Long id) {
