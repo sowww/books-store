@@ -8,6 +8,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -113,5 +114,21 @@ public class Book {
         validateName(name);
         validatePrice(price);
         validateQuantity(quantity);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return quantity == book.quantity &&
+                Float.compare(book.price, price) == 0 &&
+                Objects.equals(id, book.id) &&
+                Objects.equals(name, book.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, quantity, price);
     }
 }

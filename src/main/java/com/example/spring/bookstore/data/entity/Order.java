@@ -1,6 +1,7 @@
 package com.example.spring.bookstore.data.entity;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -74,5 +75,21 @@ public class Order {
     public enum Status {
         PENDING,
         PAID
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return Float.compare(order.totalPayment, totalPayment) == 0 &&
+                Objects.equals(orderId, order.orderId) &&
+                Objects.equals(user, order.user) &&
+                status == order.status;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(orderId, user, totalPayment, status);
     }
 }
