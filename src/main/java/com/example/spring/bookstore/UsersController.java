@@ -3,8 +3,8 @@ package com.example.spring.bookstore;
 import com.example.spring.bookstore.data.entity.Order;
 import com.example.spring.bookstore.data.entity.User;
 import com.example.spring.bookstore.data.view.OrderView;
-import com.example.spring.bookstore.services.OrderService;
-import com.example.spring.bookstore.services.UserService;
+import com.example.spring.bookstore.service.OrderService;
+import com.example.spring.bookstore.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,6 +23,7 @@ public class UsersController {
     private final Logger log = LoggerFactory.getLogger(UsersController.class);
     private final UserService userService;
     private final OrderService orderService;
+
 
     public UsersController(UserService userService, OrderService orderService) {
         this.userService = userService;
@@ -65,11 +66,12 @@ public class UsersController {
      */
     @GetMapping("/{id}/orders")
     public ResponseEntity<Object> getOrdersByUserId(@PathVariable Long id) {
+        log.debug("getOrdersByUserId {}", id);
         try {
             Iterable<Order> orders = orderService.getOrdersByUserId(id);
             return ResponseEntity.ok(OrderView.fromOrders(orders));
         } catch (OrderService.OrderServiceFieldException e) {
-            return new ResponseEntity<>(e.getErrorsView(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getErrorsView(), HttpStatus.NOT_FOUND);
         }
     }
 

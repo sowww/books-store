@@ -1,4 +1,4 @@
-package com.example.spring.bookstore.services;
+package com.example.spring.bookstore.service;
 
 import com.example.spring.bookstore.data.entity.Book;
 import com.example.spring.bookstore.data.entity.Order;
@@ -240,10 +240,10 @@ public class OrderService {
         }
     }
 
-    public class OrderServiceFieldException extends Exception {
+    public static class OrderServiceFieldException extends Exception {
         private FieldErrorsView errorsView;
 
-        OrderServiceFieldException(FieldErrorsView errorsView) {
+        public OrderServiceFieldException(FieldErrorsView errorsView) {
             this.errorsView = errorsView;
         }
 
@@ -252,8 +252,8 @@ public class OrderService {
         }
     }
 
-    public class OrderNotExistException extends Exception {
-        OrderNotExistException() {
+    public static class OrderNotExistException extends Exception {
+        public OrderNotExistException() {
             super("Order doesn't exist");
         }
     }

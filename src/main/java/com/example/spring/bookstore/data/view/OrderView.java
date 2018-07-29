@@ -11,14 +11,14 @@ import java.util.Set;
 public class OrderView {
     private Long orderId;
     private Long userId;
-    private float totalPayment;
+    private double totalPayment;
     private Set<BookItem> books;
     private Order.Status status;
 
     public OrderView() {
     }
 
-    public OrderView(Long orderId, Long userId, float totalPayment, Set<BookItem> books, Order.Status status) {
+    public OrderView(Long orderId, Long userId, double totalPayment, Set<BookItem> books, Order.Status status) {
         this.orderId = orderId;
         this.userId = userId;
         this.totalPayment = totalPayment;
@@ -64,11 +64,11 @@ public class OrderView {
         this.userId = userId;
     }
 
-    public float getTotalPayment() {
+    public double getTotalPayment() {
         return totalPayment;
     }
 
-    public void setTotalPayment(float totalPayment) {
+    public void setTotalPayment(double totalPayment) {
         this.totalPayment = totalPayment;
     }
 
@@ -93,7 +93,7 @@ public class OrderView {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         OrderView orderView = (OrderView) o;
-        return Float.compare(orderView.totalPayment, totalPayment) == 0 &&
+        return Double.compare(orderView.totalPayment, totalPayment) == 0 &&
                 Objects.equals(orderId, orderView.orderId) &&
                 Objects.equals(userId, orderView.userId) &&
                 Objects.equals(books, orderView.books) &&

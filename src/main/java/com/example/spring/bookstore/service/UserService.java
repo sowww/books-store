@@ -1,4 +1,4 @@
-package com.example.spring.bookstore.services;
+package com.example.spring.bookstore.service;
 
 import com.example.spring.bookstore.data.entity.User;
 import com.example.spring.bookstore.data.repository.UserRepository;

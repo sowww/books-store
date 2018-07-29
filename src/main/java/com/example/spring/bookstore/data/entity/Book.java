@@ -31,7 +31,7 @@ public class Book {
 
     @NotNull(message = "Price can't be null")
     @Min(value = 0, message = "Price can't be less than 0")
-    private float price;
+    private double price;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.PERSIST)
     private Set<OrderItem> orderItems;
@@ -39,7 +39,7 @@ public class Book {
     private Book() {
     }
 
-    public Book(String name, float price, int quantity) throws ValidationException {
+    public Book(String name, double price, int quantity) throws ValidationException {
         this();
         validateParams(name, price, quantity);
         this.name = name;
@@ -86,11 +86,11 @@ public class Book {
         this.quantity = quantity;
     }
 
-    public float getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(float price) {
+    public void setPrice(double price) {
         validatePrice(price);
         this.price = price;
     }
@@ -100,7 +100,7 @@ public class Book {
             throw new ValidationException("Book name is not valid");
     }
 
-    private void validatePrice(float price) {
+    private void validatePrice(double price) {
         if (price < 0)
             throw new ValidationException("Book quantity can't be less than 0");
     }
@@ -110,7 +110,7 @@ public class Book {
             throw new ValidationException("Book quantity can't be less than 0");
     }
 
-    private void validateParams(String name, float price, int quantity) throws ValidationException {
+    private void validateParams(String name, double price, int quantity) throws ValidationException {
         validateName(name);
         validatePrice(price);
         validateQuantity(quantity);
@@ -122,7 +122,7 @@ public class Book {
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
         return quantity == book.quantity &&
-                Float.compare(book.price, price) == 0 &&
+                Double.compare(book.price, price) == 0 &&
                 Objects.equals(id, book.id) &&
                 Objects.equals(name, book.name);
     }

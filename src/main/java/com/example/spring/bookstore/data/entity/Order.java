@@ -14,7 +14,7 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    private float totalPayment;
+    private double totalPayment;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private Set<OrderItem> orderItems;
@@ -25,7 +25,7 @@ public class Order {
     public Order() {
     }
 
-    public Order(User user, float totalPayment, Set<OrderItem> orderItems, Status status) {
+    public Order(User user, double totalPayment, Set<OrderItem> orderItems, Status status) {
         this.user = user;
         this.totalPayment = totalPayment;
         this.orderItems = orderItems;
@@ -48,11 +48,11 @@ public class Order {
         this.user = user;
     }
 
-    public float getTotalPayment() {
+    public double getTotalPayment() {
         return totalPayment;
     }
 
-    public void setTotalPayment(float totalPayment) {
+    public void setTotalPayment(double totalPayment) {
         this.totalPayment = totalPayment;
     }
 
@@ -82,7 +82,7 @@ public class Order {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Order order = (Order) o;
-        return Float.compare(order.totalPayment, totalPayment) == 0 &&
+        return Double.compare(order.totalPayment, totalPayment) == 0 &&
                 Objects.equals(orderId, order.orderId) &&
                 Objects.equals(user, order.user) &&
                 status == order.status;

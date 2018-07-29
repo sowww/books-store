@@ -4,9 +4,9 @@ import com.example.spring.bookstore.data.entity.Order;
 import com.example.spring.bookstore.data.view.OrderView;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.OrderRequest;
-import com.example.spring.bookstore.services.OrderService;
-import com.example.spring.bookstore.services.OrderService.OrderNotExistException;
-import com.example.spring.bookstore.services.OrderService.OrderServiceFieldException;
+import com.example.spring.bookstore.service.OrderService;
+import com.example.spring.bookstore.service.OrderService.OrderNotExistException;
+import com.example.spring.bookstore.service.OrderService.OrderServiceFieldException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -103,6 +103,7 @@ public class OrdersController {
     /**
      * Getting all orders with userId
      * <p>example: GET /api/orders/filter?userId=12</p>
+     *
      * @param userId user id
      */
     @GetMapping(value = "/filter")
@@ -113,7 +114,7 @@ public class OrdersController {
             Iterable<Order> orders = orderService.getOrdersByUserId(userId);
             return ResponseEntity.ok(OrderView.fromOrders(orders));
         } catch (OrderServiceFieldException e) {
-            return new ResponseEntity<>(e.getErrorsView(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getErrorsView(), HttpStatus.NOT_FOUND);
         }
 
     }
@@ -121,6 +122,7 @@ public class OrdersController {
     /**
      * Deleting order by id
      * <p>example: DELETE /api/orders/12</p>
+     *
      * @param id order id
      */
     @DeleteMapping(value = "/{id}")

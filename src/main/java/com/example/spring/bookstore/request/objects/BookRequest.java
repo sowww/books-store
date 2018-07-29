@@ -18,12 +18,12 @@ public class BookRequest {
     private Integer quantity;
     @NotNull(message = "Price can't be null")
     @Min(value = 0, message = "Price can't be less than 0")
-    private Float price;
+    private Double price;
 
     public BookRequest() {
     }
 
-    public BookRequest(String name, Integer quantity, Float price) {
+    public BookRequest(String name, Integer quantity, Double price) {
         this.name = name;
         this.quantity = quantity;
         this.price = price;
@@ -53,11 +53,11 @@ public class BookRequest {
         this.quantity = quantity;
     }
 
-    public Float getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(Float price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 

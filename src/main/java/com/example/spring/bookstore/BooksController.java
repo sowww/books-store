@@ -3,7 +3,7 @@ package com.example.spring.bookstore;
 import com.example.spring.bookstore.data.entity.Book;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.BookRequest;
-import com.example.spring.bookstore.services.BookService;
+import com.example.spring.bookstore.service.BookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

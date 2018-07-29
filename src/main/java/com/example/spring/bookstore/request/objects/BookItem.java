@@ -10,6 +10,9 @@ public class BookItem {
     @Min(1)
     private int quantity;
 
+    public BookItem() {
+    }
+
     public BookItem(Long bookId, int quantity) {
         this.bookId = bookId;
         this.quantity = quantity;

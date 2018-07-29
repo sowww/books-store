@@ -1,4 +1,4 @@
-package com.example.spring.bookstore.services;
+package com.example.spring.bookstore.service;
 
 import com.example.spring.bookstore.data.entity.Book;
 import com.example.spring.bookstore.data.repository.BookRepository;
@@ -27,6 +27,7 @@ public class BookService {
      * Fills BooksRepository with dummy books
      */
     public void fillBooksRepository() {
+        log.info("fillBooksRepository()");
         for (int i = 1; i <= 10; i++) {
 
             String bookName = "Book " + i;

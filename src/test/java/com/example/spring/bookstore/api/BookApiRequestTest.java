@@ -3,7 +3,7 @@ package com.example.spring.bookstore.api;
 import com.example.spring.bookstore.BooksController;
 import com.example.spring.bookstore.data.entity.Book;
 import com.example.spring.bookstore.request.objects.BookRequest;
-import com.example.spring.bookstore.services.BookService;
+import com.example.spring.bookstore.service.BookService;
 import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,9 +52,9 @@ public class BookApiRequestTest {
         when(bookService.getById(1L)).thenReturn(java.util.Optional.ofNullable(book1));
         mvc.perform(get("/api/books/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", is("Book 1")))
-                .andExpect(jsonPath("$.price", is(130.0)))
-                .andExpect(jsonPath("$.quantity", is(10)));
+                .andExpect(jsonPath("$.name", is(book1.getName())))
+                .andExpect(jsonPath("$.price", is(book1.getPrice())))
+                .andExpect(jsonPath("$.quantity", is(book1.getQuantity())));
     }
 
     @Test
@@ -65,12 +65,12 @@ public class BookApiRequestTest {
         when(bookService.getAll()).thenReturn(books);
         mvc.perform(get("/api/books").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name", is("Book 1")))
-                .andExpect(jsonPath("$[0].price", is(130.0)))
-                .andExpect(jsonPath("$[0].quantity", is(10)))
-                .andExpect(jsonPath("$[1].name", is("Book 2")))
-                .andExpect(jsonPath("$[1].price", is(100.0)))
-                .andExpect(jsonPath("$[1].quantity", is(5)));
+                .andExpect(jsonPath("$[0].name", is(book1.getName())))
+                .andExpect(jsonPath("$[0].price", is(book1.getPrice())))
+                .andExpect(jsonPath("$[0].quantity", is(book1.getQuantity())))
+                .andExpect(jsonPath("$[1].name", is(book2.getName())))
+                .andExpect(jsonPath("$[1].price", is(book2.getPrice())))
+                .andExpect(jsonPath("$[1].quantity", is(book2.getQuantity())));
     }
 
     @Test
@@ -95,8 +95,8 @@ public class BookApiRequestTest {
 
     @Test
     public void createBookReturnIsCreatedTest() throws Exception {
-        @Valid BookRequest bookRequest = new BookRequest("Book 1", 5, 150.0F);
-        Book book = new Book("Book 1", 150F, 5);
+        @Valid BookRequest bookRequest = new BookRequest("Book 1", 5, 150.0);
+        Book book = new Book("Book 1", 150.0, 5);
         when(bookService.addBook(bookRequest)).thenReturn(book);
         mvc.perform(post("/api/books")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -113,9 +113,9 @@ public class BookApiRequestTest {
     public void creatingBookWithNonValidRequestsReturnBadRequest() throws Exception {
 
         List<BookRequest> bookRequestList = new ArrayList<>();
-        bookRequestList.add(new BookRequest("%&Book 1", 5, 150F));
-        bookRequestList.add(new BookRequest("Book 1", -5, 150F));
-        bookRequestList.add(new BookRequest("Book 1", 5, -150F));
+        bookRequestList.add(new BookRequest("%&Book 1", 5, 150D));
+        bookRequestList.add(new BookRequest("Book 1", -5, 150D));
+        bookRequestList.add(new BookRequest("Book 1", 5, -150D));
         for (BookRequest bookRequest : bookRequestList) {
             mvc.perform(post("/api/books")
                     .contentType(MediaType.APPLICATION_JSON)
