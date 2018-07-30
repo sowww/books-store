@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import java.util.Optional;
 
 @Service
@@ -34,13 +33,9 @@ public class BookService {
             int price = 100;
             int count = 5;
 
-            try {
-                Book book = new Book(bookName, price, count);
-                bookRepository.save(book);
-                log.info("Book id: {} name: '{}' price: {} count: {}", book.getId(), bookName, price, count);
-            } catch (ValidationException e) {
-                log.info(e.getMessage());
-            }
+            Book book = new Book(bookName, price, count);
+            bookRepository.save(book);
+            log.info("Book id: {} name: '{}' price: {} count: {}", book.getId(), bookName, price, count);
         }
     }
 

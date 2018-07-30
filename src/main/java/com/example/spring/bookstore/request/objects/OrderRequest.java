@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class OrderRequest {
     @Valid
+    @NotNull
     private Set<BookItem> books;
     @NotNull
     private Long userId;
