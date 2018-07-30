@@ -1,4 +1,4 @@
-package com.example.spring.bookstore.api;
+package com.example.spring.bookstore.controller;
 
 
 import com.example.spring.bookstore.OrdersController;
@@ -7,9 +7,7 @@ import com.example.spring.bookstore.data.entity.User;
 import com.example.spring.bookstore.errors.FieldErrorsView;
 import com.example.spring.bookstore.request.objects.BookItem;
 import com.example.spring.bookstore.request.objects.OrderRequest;
-import com.example.spring.bookstore.service.BookService;
 import com.example.spring.bookstore.service.OrderService;
-import com.example.spring.bookstore.service.UserService;
 import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,23 +34,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = OrdersController.class)
-public class OrdersApiRequestTest {
+public class OrdersControllerTest {
 
-    private static final Logger log = LoggerFactory.getLogger(OrdersApiRequestTest.class);
+    private static final Logger log = LoggerFactory.getLogger(OrdersControllerTest.class);
 
     private static final String USER_NAME = "UserName";
     private static final Long USER_ID = 1L;
     private static final Long ORDER_ID = 2L;
     private static final Long BOOK_ID = 3L;
     private static final int BOOK_QUANTITY = 5;
+
     @Autowired
-    MockMvc mvc;
+    private MockMvc mvc;
     @MockBean
-    OrderService orderService;
-    @MockBean
-    BookService bookService;
-    @MockBean
-    UserService userService;
+    private OrderService orderService;
+
     private Gson gson;
     private User user;
     private Order order;
@@ -164,7 +160,7 @@ public class OrdersApiRequestTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(gson.toJson(orderRequest))
         )
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.orderId", is(ORDER_ID.intValue())));
     }
 

@@ -17,11 +17,11 @@ public class UserService {
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        fillUsersRepository();
+//        fillUsersRepository();
     }
 
     // Fills usersRepository with dummy users
-    private void fillUsersRepository() {
+    public void fillUsersRepository() {
         final String[] names = {
                 "Yuri",
                 "Ivan",
@@ -44,6 +44,14 @@ public class UserService {
 
     public Optional<User> getById(Long id) {
         return userRepository.findById(id);
+    }
+
+    public void deleteAll() {
+        userRepository.deleteAll();
+    }
+
+    public User addUser(User user) {
+        return userRepository.save(user);
     }
 
 }

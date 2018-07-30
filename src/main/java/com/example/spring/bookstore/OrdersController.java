@@ -48,7 +48,7 @@ public class OrdersController {
 
         try {
             Order order = orderService.createOrder(orderRequest);
-            return ResponseEntity.ok(OrderView.fromOrder(order));
+            return new ResponseEntity<>(OrderView.fromOrder(order), HttpStatus.CREATED);
         } catch (OrderServiceFieldException e) {
             return new ResponseEntity<>(e.getErrorsView(), HttpStatus.BAD_REQUEST);
         }

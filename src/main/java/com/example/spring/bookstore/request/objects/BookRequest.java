@@ -29,11 +29,15 @@ public class BookRequest {
         this.price = price;
     }
 
+    public static BookRequest fromBook(Book book) {
+        return new BookRequest(book.getName(), book.getQuantity(), book.getPrice());
+    }
+
     public Book toBook() {
         return new Book(
                 name,
-                price != null ? price : 0,
-                quantity != null ? quantity : 0
+                price,
+                quantity
         );
     }
 

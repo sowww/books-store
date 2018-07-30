@@ -240,6 +240,10 @@ public class OrderService {
         }
     }
 
+    public void deleteAll() {
+        orderRepository.deleteAll();
+    }
+
     public static class OrderServiceFieldException extends Exception {
         private FieldErrorsView errorsView;
 

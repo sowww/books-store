@@ -1,4 +1,4 @@
-package com.example.spring.bookstore.api;
+package com.example.spring.bookstore.controller;
 
 import com.example.spring.bookstore.UsersController;
 import com.example.spring.bookstore.data.entity.Order;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = UsersController.class, secure = false)
-public class UserApiRequestTest {
+public class UsersControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -73,8 +73,7 @@ public class UserApiRequestTest {
 
     @Test
     public void getNonExistentUserByIdReturnUser() throws Exception {
-        User user = null;
-        when(userService.getById(1L)).thenReturn(Optional.ofNullable(user));
+        when(userService.getById(1L)).thenReturn(Optional.empty());
         mvc.perform(
                 get("/api/users/1").accept(MediaType.APPLICATION_JSON)
         )

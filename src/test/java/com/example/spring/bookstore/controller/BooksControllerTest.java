@@ -1,4 +1,4 @@
-package com.example.spring.bookstore.api;
+package com.example.spring.bookstore.controller;
 
 import com.example.spring.bookstore.BooksController;
 import com.example.spring.bookstore.data.entity.Book;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = BooksController.class, secure = false)
-public class BookApiRequestTest {
+public class BooksControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -48,7 +48,7 @@ public class BookApiRequestTest {
     }
 
     @Test
-    public void getBookReturnBookTest() throws Exception {
+    public void getBookReturnBook() throws Exception {
         when(bookService.getById(1L)).thenReturn(java.util.Optional.ofNullable(book1));
         mvc.perform(get("/api/books/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -58,7 +58,7 @@ public class BookApiRequestTest {
     }
 
     @Test
-    public void getBooksReturnBooksTest() throws Exception {
+    public void getBooksReturnBooks() throws Exception {
         List<Book> books = new ArrayList<>();
         books.add(book1);
         books.add(book2);

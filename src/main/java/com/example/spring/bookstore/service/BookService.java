@@ -19,7 +19,7 @@ public class BookService {
 
     public BookService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
-        fillBooksRepository();
+//        fillBooksRepository();
     }
 
 
@@ -53,6 +53,7 @@ public class BookService {
     }
 
     public void deleteAll() {
+        log.info("Clear book repo");
         bookRepository.deleteAll();
     }
 

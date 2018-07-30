@@ -1,24 +1,24 @@
 package com.example.spring.bookstore.data.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "Users")
 public class User {
 
-    public static final String VALIDATION_REGEX = "[a-zA-Z]+[a-zA-Z0-9_\\s.]*";
+    private static final String VALIDATION_REGEX = "[a-zA-Z]+[a-zA-Z0-9_\\s.]*";
 
     @Id
     @GeneratedValue
     private Long id;
     private String name;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
-    private Set<Order> orders;
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST)
+//    private Set<Order> orders;
 
     private User() {
     }
@@ -48,14 +48,14 @@ public class User {
         this.name = name;
     }
 
-    @JsonIgnore
-    public Set<Order> getOrders() {
-        return orders;
-    }
+//    @JsonIgnore
+//    public Set<Order> getOrders() {
+//        return orders;
+//    }
 
-    public void setOrders(Set<Order> orders) {
-        this.orders = orders;
-    }
+//    public void setOrders(Set<Order> orders) {
+//        this.orders = orders;
+//    }
 
     @Override
     public boolean equals(Object o) {

@@ -36,9 +36,9 @@ public class Order {
         return orderId;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
+//    public void setOrderId(Long orderId) {
+//        this.orderId = orderId;
+//    }
 
     public User getUser() {
         return user;
