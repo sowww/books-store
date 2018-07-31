@@ -1,15 +1,15 @@
 package com.example.spring.bookstore.data.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
 import javax.validation.ValidationException;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "Books")
@@ -33,8 +33,8 @@ public class Book {
     @Min(value = 0, message = "Price can't be less than 0")
     private double price;
 
-//    @OneToMany(fetch = FetchType.EAGER, mappedBy = "book", cascade = CascadeType.PERSIST)
-//    private Set<OrderItem> orderItems;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "book", cascade = CascadeType.PERSIST)
+    private Set<OrderItem> orderItems;
 
     private Book() {
     }
@@ -51,14 +51,14 @@ public class Book {
         return name.matches(VALIDATION_REGEX);
     }
 
-//    @JsonIgnore
-//    public Set<OrderItem> getOrderItems() {
-//        return orderItems;
-//    }
+    @JsonIgnore
+    public Set<OrderItem> getOrderItems() {
+        return orderItems;
+    }
 
-//    public void setOrderItems(Set<OrderItem> orderItems) {
-//        this.orderItems = orderItems;
-//    }
+    public void setOrderItems(Set<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+    }
 
     public Long getId() {
         return id;

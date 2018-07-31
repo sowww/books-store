@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class UserIntegrationTest {
     private final static Logger log = LoggerFactory.getLogger(BookIntegrationTest.class);
-    private final static List<User> dummyUsers = new ArrayList<>();
+    private final static List<User> DUMMY_USERS = new ArrayList<>();
 
     @Autowired
     private MockMvc mvc;
@@ -42,12 +42,12 @@ public class UserIntegrationTest {
 
     @BeforeClass
     public static void setUp() {
-        DummyFiller.fillDummyUsers(dummyUsers);
+        DummyFiller.fillDummyUsers(DUMMY_USERS);
     }
 
     private void clearAndFillUserRepo() {
         userService.deleteAll();
-        for (User dummyUser : dummyUsers) {
+        for (User dummyUser : DUMMY_USERS) {
             User resultUser = userService.addUser(dummyUser);
             log.info("User id: {} name: {} created", resultUser.getId(), resultUser.getName());
         }

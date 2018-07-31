@@ -95,7 +95,7 @@ public class BooksControllerTest {
 
     @Test
     public void createBookReturnIsCreatedTest() throws Exception {
-        @Valid BookRequest bookRequest = new BookRequest("Book 1", 5, 150.0);
+        @Valid BookRequest bookRequest = new BookRequest("Book 1", 150.0, 5);
         Book book = new Book("Book 1", 150.0, 5);
         when(bookService.addBook(bookRequest)).thenReturn(book);
         mvc.perform(post("/api/books")
@@ -113,9 +113,9 @@ public class BooksControllerTest {
     public void creatingBookWithNonValidRequestsReturnBadRequest() throws Exception {
 
         List<BookRequest> bookRequestList = new ArrayList<>();
-        bookRequestList.add(new BookRequest("%&Book 1", 5, 150D));
-        bookRequestList.add(new BookRequest("Book 1", -5, 150D));
-        bookRequestList.add(new BookRequest("Book 1", 5, -150D));
+        bookRequestList.add(new BookRequest("%&Book 1", 150D, 5));
+        bookRequestList.add(new BookRequest("Book 1", 150D, -5));
+        bookRequestList.add(new BookRequest("Book 1", -150D, 5));
         for (BookRequest bookRequest : bookRequestList) {
             mvc.perform(post("/api/books")
                     .contentType(MediaType.APPLICATION_JSON)

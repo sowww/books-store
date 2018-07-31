@@ -11,6 +11,7 @@ import com.example.spring.bookstore.service.BookService;
 import com.example.spring.bookstore.service.OrderService;
 import com.example.spring.bookstore.service.UserService;
 import com.example.spring.bookstore.util.DummyFiller;
+import com.example.spring.bookstore.util.OrderRequestBuilder;
 import com.google.gson.Gson;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -24,10 +25,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static com.example.spring.bookstore.util.MvcUtils.mvcResultToClass;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,8 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class OrderIntegrationTest {
 
     private final static Logger log = LoggerFactory.getLogger(BookIntegrationTest.class);
-    private final static List<Book> dummyBooks = new ArrayList<>();
-    private final static List<User> dummyUsers = new ArrayList<>();
+    private final static List<Book> DUMMY_BOOKS = new ArrayList<>();
+    private final static List<User> DUMMY_USERS = new ArrayList<>();
 
     private final static Gson gson = new Gson();
 
@@ -55,25 +61,25 @@ public class OrderIntegrationTest {
 
     @BeforeClass
     public static void setUp() {
-        DummyFiller.fillDummyBooks(dummyBooks);
-        DummyFiller.fillDummyUsers(dummyUsers);
+        DummyFiller.fillDummyBooks(DUMMY_BOOKS);
+        DummyFiller.fillDummyUsers(DUMMY_USERS);
     }
 
     private void clearAndFillBookAndUserRepos() {
         bookService.deleteAll();
-        for (Book dummyBook : dummyBooks) {
+        for (Book dummyBook : DUMMY_BOOKS) {
             BookRequest bookRequest = BookRequest.fromBook(dummyBook);
             bookService.addBook(bookRequest);
         }
 
         userService.deleteAll();
-        for (User dummyUser : dummyUsers) userService.addUser(dummyUser);
+        for (User dummyUser : DUMMY_USERS) userService.addUser(dummyUser);
     }
 
     @Before
     public void resetRepos() {
-        clearAndFillBookAndUserRepos();
         orderService.deleteAll();
+        clearAndFillBookAndUserRepos();
     }
 
     @After
@@ -85,11 +91,13 @@ public class OrderIntegrationTest {
     public void createOrderWorkingCorrectly() throws Exception {
         List<User> users = (List<User>) userService.getAll();
         List<Book> books = (List<Book>) bookService.getAll();
-        Set<BookItem> bookItems = new HashSet<>();
-        bookItems.add(new BookItem(books.get(0).getId(), 1));
-        bookItems.add(new BookItem(books.get(1).getId(), 1));
-        OrderRequest orderRequest =
-                new OrderRequest(bookItems, users.get(0).getId());
+
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .addBook(books.get(1).getId(), 1)
+                .build();
+
         MvcResult result = mvc.perform(post("/api/orders")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -113,22 +121,22 @@ public class OrderIntegrationTest {
     public void creatingOrderWithNoExistentUserOrBookReturnBadRequest() throws Exception {
         List<User> users = (List<User>) userService.getAll();
         List<Book> books = (List<Book>) bookService.getAll();
+
         Long maxUserId = 0L;
+        for (User user : users) if (user.getId() > maxUserId) maxUserId = user.getId();
         Long maxBookIs = 0L;
-        for (User user : users) {
-            if (user.getId() > maxUserId) maxUserId = user.getId();
-        }
-        for (Book book : books) {
-            if (book.getId() > maxBookIs) maxBookIs = book.getId();
-        }
-        Set<BookItem> bookItems = new HashSet<>();
-        bookItems.add(new BookItem(books.get(0).getId(), 1));
-        OrderRequest orderRequestNonValidUserId =
-                new OrderRequest(bookItems, maxUserId + 1);
-        bookItems.clear();
-        bookItems.add(new BookItem(maxBookIs + 1, 1));
-        OrderRequest orderRequestNonValidBookId =
-                new OrderRequest(bookItems, users.get(0).getId());
+        for (Book book : books) if (book.getId() > maxBookIs) maxBookIs = book.getId();
+
+        OrderRequest orderRequestNonValidUserId = new OrderRequestBuilder()
+                .setUserId(maxUserId + 1)
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+        OrderRequest orderRequestNonValidBookId = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(maxBookIs + 1, 1)
+                .build();
+
         List<OrderRequest> orderRequests =
                 Arrays.asList(
                         orderRequestNonValidUserId,
@@ -147,19 +155,12 @@ public class OrderIntegrationTest {
     @Test
     public void cantOrderMoreBooksThanStockQuantity() throws Exception {
         List<User> users = (List<User>) userService.getAll();
-        User user = users.get(0);
         List<Book> books = (List<Book>) bookService.getAll();
 
-        Set<BookItem> bookItems = new HashSet<>();
-        bookItems.add(new BookItem(
-                        books.get(0).getId(),
-                        books.get(0).getQuantity() + 1
-                )
-        );
-        OrderRequest orderRequest = new OrderRequest(
-                bookItems,
-                user.getId()
-        );
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), books.get(0).getQuantity() + 1)
+                .build();
 
         mvc.perform(post("/api/orders")
                 .accept(MediaType.APPLICATION_JSON)
@@ -176,16 +177,13 @@ public class OrderIntegrationTest {
     @Test
     public void cantUseNotUniqueBookIdInOrder() throws Exception {
         List<User> users = (List<User>) userService.getAll();
-        User user = users.get(0);
         List<Book> books = (List<Book>) bookService.getAll();
 
-        Set<BookItem> bookItems = new HashSet<>();
-        bookItems.add(new BookItem(books.get(0).getId(), 1));
-        bookItems.add(new BookItem(books.get(0).getId(), 2));
-        OrderRequest orderRequest = new OrderRequest(
-                bookItems,
-                user.getId()
-        );
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .addBook(books.get(0).getId(), 2)
+                .build();
 
         mvc.perform(post("/api/orders")
                 .accept(MediaType.APPLICATION_JSON)
@@ -200,16 +198,44 @@ public class OrderIntegrationTest {
     }
 
     @Test
+    public void BooksTransactionRollingBackOnOrderCreateException() throws Exception {
+        List<User> users = (List<User>) userService.getAll();
+        List<Book> books = (List<Book>) bookService.getAll();
+        int book0Quantity = books.get(0).getQuantity();
+        int book1Quantity = books.get(1).getQuantity();
+        int book2Quantity = books.get(2).getQuantity();
+
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .addBook(books.get(1).getId(), 1)
+                .addBook(books.get(2).getId(), 1)
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+        mvc.perform(post("/api/orders")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .content(gson.toJson(orderRequest))
+        )
+                .andExpect(status().isBadRequest());
+
+        books = (List<Book>) bookService.getAll();
+        Assert.assertEquals(books.get(0).getQuantity(), book0Quantity);
+        Assert.assertEquals(books.get(1).getQuantity(), book1Quantity);
+        Assert.assertEquals(books.get(2).getQuantity(), book2Quantity);
+    }
+
+    @Test
     public void orderCanSetPaid() throws Exception {
         List<User> users = (List<User>) userService.getAll();
         List<Book> books = (List<Book>) bookService.getAll();
 
-        Set<BookItem> bookItems = new HashSet<>();
-        bookItems.add(new BookItem(books.get(0).getId(), 1));
-        OrderRequest orderRequest = new OrderRequest(
-                bookItems,
-                users.get(0).getId()
-        );
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
         Order createdOrder = orderService.createOrder(orderRequest);
 
         mvc.perform(post(
@@ -224,12 +250,11 @@ public class OrderIntegrationTest {
         List<User> users = (List<User>) userService.getAll();
         List<Book> books = (List<Book>) bookService.getAll();
 
-        Set<BookItem> bookItems = new HashSet<>();
-        bookItems.add(new BookItem(books.get(0).getId(), 1));
-        OrderRequest orderRequest = new OrderRequest(
-                bookItems,
-                users.get(0).getId()
-        );
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
         Order createdOrder = orderService.createOrder(orderRequest);
         orderService.orderSetPaidById(createdOrder.getOrderId());
 
@@ -250,5 +275,134 @@ public class OrderIntegrationTest {
         ).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors[0].rejectedValue", is(999)));
+    }
+
+    @Test
+    public void getAllOrdersReturnAllOrderViews() throws Exception {
+        List<User> users = (List<User>) userService.getAll();
+        List<Book> books = (List<Book>) bookService.getAll();
+
+        OrderRequest orderRequest1 = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+        OrderRequest orderRequest2 = new OrderRequestBuilder()
+                .setUserId(users.get(1).getId())
+                .addBook(books.get(1).getId(), 2)
+                .build();
+        List<OrderRequest> orderRequests = Arrays.asList(orderRequest1, orderRequest2);
+
+        for (OrderRequest orderRequest : orderRequests) {
+            mvc.perform(post("/api/orders")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                    .content(gson.toJson(orderRequest))
+            )
+                    .andExpect(status().isCreated());
+        }
+
+        MvcResult result = mvc.perform(get("/api/orders").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andReturn();
+
+        OrderView[] orderViews = mvcResultToClass(result, OrderView[].class);
+        Assert.assertEquals(orderViews.length, 2);
+        for (OrderView orderView : orderViews) {
+            if (orderView.getUserId().equals(users.get(0).getId())) {
+                Set<BookItem> bookItems = orderView.getBooks();
+                Assert.assertEquals(bookItems.spliterator().getExactSizeIfKnown(), 1);
+                BookItem bookItem = bookItems.stream().findFirst().get();
+                Assert.assertEquals(bookItem.getBookId(), books.get(0).getId());
+                Assert.assertEquals(bookItem.getQuantity(), 1);
+            } else if (orderView.getUserId().equals(users.get(1).getId())) {
+                Set<BookItem> bookItems = orderView.getBooks();
+                Assert.assertEquals(bookItems.spliterator().getExactSizeIfKnown(), 1);
+                BookItem bookItem = bookItems.stream().findFirst().get();
+                Assert.assertEquals(bookItem.getBookId(), books.get(1).getId());
+                Assert.assertEquals(bookItem.getQuantity(), 2);
+            } else {
+                throw new Exception("UserId was not in order requests");
+            }
+        }
+    }
+
+    @Test
+    public void getByIdReturnProperOrder() throws Exception {
+        List<User> users = (List<User>) userService.getAll();
+        List<Book> books = (List<Book>) bookService.getAll();
+
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+        MvcResult resultAfterCreate = mvc.perform(post("/api/orders")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .content(gson.toJson(orderRequest))
+        )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.userId", is(users.get(0).getId().intValue())))
+                .andExpect(jsonPath("$.books[0].bookId", is(books.get(0).getId().intValue())))
+                .andExpect(jsonPath("$.books[0].quantity", is(1)))
+                .andReturn();
+
+        OrderView orderViewAfterCreate = mvcResultToClass(resultAfterCreate, OrderView.class);
+        Long orderId = orderViewAfterCreate.getOrderId();
+
+        mvc.perform(get("/api/orders/" + orderId).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId", is(users.get(0).getId().intValue())))
+                .andExpect(jsonPath("$.books[0].bookId", is(books.get(0).getId().intValue())))
+                .andExpect(jsonPath("$.books[0].quantity", is(1)));
+    }
+
+    @Test
+    public void getOrdersByUserIdWorks() throws Exception {
+        List<User> users = (List<User>) userService.getAll();
+        List<Book> books = (List<Book>) bookService.getAll();
+
+        OrderRequest orderRequest1 = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+        OrderRequest orderRequest2 = new OrderRequestBuilder()
+                .setUserId(users.get(1).getId())
+                .addBook(books.get(1).getId(), 2)
+                .build();
+        List<OrderRequest> orderRequests = Arrays.asList(orderRequest1, orderRequest2);
+
+        for (OrderRequest orderRequest : orderRequests) {
+            mvc.perform(post("/api/orders")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                    .content(gson.toJson(orderRequest))
+            )
+                    .andExpect(status().isCreated());
+        }
+
+        mvc.perform(get("/api/orders/filter?userId=" + users.get(1).getId())
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].userId", is(users.get(1).getId().intValue())))
+                .andExpect(jsonPath("$[0].books[0].bookId", is(books.get(1).getId().intValue())))
+                .andExpect(jsonPath("$[0].books[0].quantity", is(2)));
+    }
+
+    @Test
+    public void cantGetOrdersFromNonExistentUserId() throws Exception {
+        List<User> users = (List<User>) userService.getAll();
+        Long maxUserId = 0L;
+        for (User user : users) if (user.getId() > maxUserId) maxUserId = user.getId();
+
+        mvc.perform(get("/api/orders/filter?userId=" + (maxUserId + 1))
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isNotFound());
     }
 }

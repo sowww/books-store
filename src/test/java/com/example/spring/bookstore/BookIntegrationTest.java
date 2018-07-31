@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class BookIntegrationTest {
 
     private final static Logger log = LoggerFactory.getLogger(BookIntegrationTest.class);
-    private final static List<Book> dummyBooks = new ArrayList<>();
+    private final static List<Book> DUMMY_BOOKS = new ArrayList<>();
 
     private final static double DOUBLE_DELTA = 0.001D;
 
@@ -48,12 +48,13 @@ public class BookIntegrationTest {
 
     @BeforeClass
     public static void setUp() {
-        DummyFiller.fillDummyBooks(dummyBooks);
+        DummyFiller.fillDummyBooks(DUMMY_BOOKS);
     }
 
     private void clearAndFillBookRepo() {
+        log.info("clearAndFillBookRepo()");
         bookService.deleteAll();
-        for (Book book : dummyBooks) {
+        for (Book book : DUMMY_BOOKS) {
             BookRequest bookRequest = BookRequest.fromBook(book);
             Book resultBook = bookService.addBook(bookRequest);
             log.info("User id: {} name: {} created", resultBook.getId(), resultBook.getName());
@@ -83,10 +84,10 @@ public class BookIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
         Book[] allBooks = mvcResultToClass(allBooksResult, Book[].class);
-        Assert.assertEquals(allBooks[0].getName(), dummyBooks.get(0).getName());
-        Assert.assertEquals(allBooks[0].getPrice(), dummyBooks.get(0).getPrice(), DOUBLE_DELTA);
-        Assert.assertEquals(allBooks[0].getQuantity(), dummyBooks.get(0).getQuantity());
-        Assert.assertEquals(allBooks[1].getName(), dummyBooks.get(1).getName());
+        Assert.assertEquals(allBooks[0].getName(), DUMMY_BOOKS.get(0).getName());
+        Assert.assertEquals(allBooks[0].getPrice(), DUMMY_BOOKS.get(0).getPrice(), DOUBLE_DELTA);
+        Assert.assertEquals(allBooks[0].getQuantity(), DUMMY_BOOKS.get(0).getQuantity());
+        Assert.assertEquals(allBooks[1].getName(), DUMMY_BOOKS.get(1).getName());
     }
 
     @Test
@@ -152,7 +153,7 @@ public class BookIntegrationTest {
 
     @Test
     public void creatingNewBookFromRequestCreatesIt() throws Exception {
-        BookRequest bookRequest = new BookRequest("Name", 1, 150D);
+        BookRequest bookRequest = new BookRequest("Name", 150D, 1);
         MvcResult result = mvc.perform(
                 post("/api/books")
                         .accept(MediaType.APPLICATION_JSON)

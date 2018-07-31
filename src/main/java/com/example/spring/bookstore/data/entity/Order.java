@@ -1,5 +1,8 @@
 package com.example.spring.bookstore.data.entity;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.util.Objects;
 import java.util.Set;
@@ -16,10 +19,15 @@ public class Order {
     private User user;
     private double totalPayment;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<OrderItem> orderItems;
 
-    //    private HashSet<Long> bookIds;
     private Status status;
 
     public Order() {
@@ -36,9 +44,9 @@ public class Order {
         return orderId;
     }
 
-//    public void setOrderId(Long orderId) {
-//        this.orderId = orderId;
-//    }
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
 
     public User getUser() {
         return user;
@@ -72,11 +80,6 @@ public class Order {
         this.status = status;
     }
 
-    public enum Status {
-        PENDING,
-        PAID
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -91,5 +94,10 @@ public class Order {
     @Override
     public int hashCode() {
         return Objects.hash(orderId, user, totalPayment, status);
+    }
+
+    public enum Status {
+        PENDING,
+        PAID
     }
 }

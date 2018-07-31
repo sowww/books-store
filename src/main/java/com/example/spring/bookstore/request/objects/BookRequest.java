@@ -13,24 +13,24 @@ public class BookRequest {
     @NotBlank(message = "Name can't be blank")
     @Pattern(regexp = Book.VALIDATION_REGEX, message = "Book name is not valid")
     private String name;
-    @NotNull(message = "Quantity can't be null")
-    @Min(value = 0, message = "Quantity can't be less than 0")
-    private Integer quantity;
     @NotNull(message = "Price can't be null")
     @Min(value = 0, message = "Price can't be less than 0")
     private Double price;
+    @NotNull(message = "Quantity can't be null")
+    @Min(value = 0, message = "Quantity can't be less than 0")
+    private Integer quantity;
 
     public BookRequest() {
     }
 
-    public BookRequest(String name, Integer quantity, Double price) {
+    public BookRequest(String name, Double price, Integer quantity) {
         this.name = name;
         this.quantity = quantity;
         this.price = price;
     }
 
     public static BookRequest fromBook(Book book) {
-        return new BookRequest(book.getName(), book.getQuantity(), book.getPrice());
+        return new BookRequest(book.getName(), book.getPrice(), book.getQuantity());
     }
 
     public Book toBook() {
@@ -71,12 +71,12 @@ public class BookRequest {
         if (o == null || getClass() != o.getClass()) return false;
         BookRequest that = (BookRequest) o;
         return Objects.equals(name, that.name) &&
-                Objects.equals(quantity, that.quantity) &&
-                Objects.equals(price, that.price);
+                Objects.equals(price, that.price) &&
+                Objects.equals(quantity, that.quantity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, quantity, price);
+        return Objects.hash(name, price, quantity);
     }
 }

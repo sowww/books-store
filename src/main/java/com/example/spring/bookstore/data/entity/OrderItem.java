@@ -43,26 +43,26 @@ public class OrderItem {
         return book;
     }
 
-//    public void setBook(Book book) {
-//        this.book = book;
-//    }
+    public void setBook(Book book) {
+        this.book = book;
+    }
 
     @JsonIgnore
-//    public Order getOrder() {
-//        return order;
-//    }
+    public Order getOrder() {
+        return order;
+    }
 
-//    public void setOrder(Order order) {
-//        this.order = order;
-//    }
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 
     public int getQuantity() {
         return quantity;
     }
 
-//    public void setQuantity(int quantity) {
-//        this.quantity = quantity;
-//    }
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
     @Override
     public boolean equals(Object o) {
