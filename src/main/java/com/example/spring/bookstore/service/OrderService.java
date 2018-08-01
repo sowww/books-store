@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -209,7 +210,10 @@ public class OrderService {
      * @param id order id
      * @throws OrderNotExistException
      */
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(
+            propagation = Propagation.REQUIRED,
+            rollbackFor = Exception.class
+    )
     public void deleteById(Long id) throws Exception {
         if (orderRepository.existsById(id)) {
             Order order = orderRepository.findById(id).get();
@@ -231,7 +235,7 @@ public class OrderService {
                     );
                 } else {
                     log.info("Book {} doesn't exist", bookId);
-                    throw new Exception("Book doesn't exist!");
+                    throw new Exception("Book doesn't exist!?");
                 }
             }
             // After returning the books
@@ -241,8 +245,16 @@ public class OrderService {
         }
     }
 
-    public void deleteAll() {
-        orderRepository.deleteAll();
+    /**
+     * Delete all orders from repo
+     *
+     * @throws Exception
+     */
+    public void deleteAll() throws Exception {
+        List<Order> orders = (List<Order>) getAllOrders();
+        for (Order order : orders) {
+            deleteById(order.getOrderId());
+        }
     }
 
     public static class OrderServiceFieldException extends Exception {

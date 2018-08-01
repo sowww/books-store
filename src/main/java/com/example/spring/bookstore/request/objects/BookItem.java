@@ -3,6 +3,7 @@ package com.example.spring.bookstore.request.objects;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+// used in OrderViews and OrderRequests
 public class BookItem {
     @NotNull
     private Long bookId;

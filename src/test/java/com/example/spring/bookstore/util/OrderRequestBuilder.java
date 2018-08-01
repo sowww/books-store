@@ -24,7 +24,11 @@ public class OrderRequestBuilder {
         return this;
     }
 
-    public OrderRequest build() {
-        return new OrderRequest(bookItems, userId);
+    public OrderRequest build() throws Exception {
+        if (bookItems.size() > 0 && userId != null) {
+            return new OrderRequest(bookItems, userId);
+        } else {
+            throw new Exception("Can't create order request");
+        }
     }
 }

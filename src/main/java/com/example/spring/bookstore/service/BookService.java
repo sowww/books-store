@@ -24,6 +24,8 @@ public class BookService {
 
     /**
      * Fills BooksRepository with ten dummy books
+     *
+     * @return all books
      */
     public Iterable<Book> fillBooksRepository() {
         log.info("fillBooksRepository()");
@@ -40,23 +42,52 @@ public class BookService {
         return bookRepository.findAll();
     }
 
+
+    /**
+     * Add a book from request
+     *
+     * @param bookRequest
+     * @return created book
+     */
     public Book addBook(@Valid BookRequest bookRequest) {
         return bookRepository.save(bookRequest.toBook());
     }
 
+
+    /**
+     * Getting all books from repo
+     *
+     * @return all books
+     */
     public Iterable<Book> getAll() {
         return bookRepository.findAll();
     }
 
+
+    /**
+     * Deleting all books from repo
+     */
     public void deleteAll() {
         log.info("Clear book repo");
         bookRepository.deleteAll();
     }
 
+
+    /**
+     * Get book by id
+     *
+     * @param id bookId
+     * @return book from repo
+     */
     public Optional<Book> getById(Long id) {
         return bookRepository.findById(id);
     }
 
+    /**
+     * If book exists, delete it
+     *
+     * @param id bookId
+     */
     public void deleteById(Long id) throws BookNotExistException {
         if (bookRepository.existsById(id)) {
             bookRepository.deleteById(id);

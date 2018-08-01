@@ -17,10 +17,13 @@ public class UserService {
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-//        fillUsersRepository();
     }
 
-    // Fills usersRepository with dummy users
+    /**
+     * Fills usersRepository with dummy users
+     *
+     * @return all users
+     */
     public Iterable<User> fillUsersRepository() {
         final String[] names = {
                 "Yuri",
@@ -39,20 +42,52 @@ public class UserService {
         return userRepository.findAll();
     }
 
+
+    /**
+     * Get all users from repo
+     *
+     * @return all users
+     */
     public Iterable<User> getAll() {
         return userRepository.findAll();
     }
 
+
+    /**
+     * Get user by id
+     *
+     * @param id user id
+     * @return user
+     */
     public Optional<User> getById(Long id) {
         return userRepository.findById(id);
     }
 
+
+    /**
+     * Delete all users from repo
+     */
     public void deleteAll() {
         userRepository.deleteAll();
     }
 
+
+    /**
+     * Add new user to repo
+     *
+     * @param user user to add
+     * @return created user
+     */
     public User addUser(User user) {
         return userRepository.save(user);
     }
 
+    /**
+     * Delete user by id
+     *
+     * @param id user id
+     */
+    public void deleteById(Long id) {
+        userRepository.deleteById(id);
+    }
 }

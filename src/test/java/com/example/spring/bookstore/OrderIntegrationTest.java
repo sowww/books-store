@@ -31,8 +31,9 @@ import java.util.List;
 import java.util.Set;
 
 import static com.example.spring.bookstore.util.MvcUtils.mvcResultToClass;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static junit.framework.TestCase.fail;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,6 +59,9 @@ public class OrderIntegrationTest {
     @Autowired
     private UserService userService;
 
+    private List<User> users;
+    private List<Book> books;
+
     @BeforeClass
     public static void setUp() {
         DummyFiller.fillDummyBooks(DUMMY_BOOKS);
@@ -76,21 +80,20 @@ public class OrderIntegrationTest {
     }
 
     @Before
-    public void resetRepos() {
+    public void resetRepos() throws Exception {
         orderService.deleteAll();
         clearAndFillBookAndUserRepos();
+        users = (List<User>) userService.getAll();
+        books = (List<Book>) bookService.getAll();
     }
 
     @After
-    public void clearOrders() {
+    public void clearOrders() throws Exception {
         orderService.deleteAll();
     }
 
     @Test
     public void createOrderWorkingCorrectly() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
@@ -118,9 +121,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void creatingOrderWithNoExistentUserOrBookReturnBadRequest() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         Long maxUserId = 0L;
         for (User user : users) if (user.getId() > maxUserId) maxUserId = user.getId();
         Long maxBookIs = 0L;
@@ -153,9 +153,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void cantOrderMoreBooksThanStockQuantity() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), books.get(0).getQuantity() + 1)
@@ -175,9 +172,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void cantUseNotUniqueBookIdInOrder() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
@@ -198,8 +192,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void BooksTransactionRollingBackOnOrderCreateException() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
         int book0Quantity = books.get(0).getQuantity();
         int book1Quantity = books.get(1).getQuantity();
         int book2Quantity = books.get(2).getQuantity();
@@ -227,9 +219,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void orderCanSetPaid() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
@@ -246,9 +235,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void cantSetPaidIfOrderIsPaid() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
@@ -278,9 +264,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void getAllOrdersReturnAllOrderViews() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest1 = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
@@ -329,9 +312,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void getByIdReturnProperOrder() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
@@ -360,9 +340,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void getOrdersByUserIdWorks() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest1 = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
@@ -395,7 +372,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void cantGetOrdersFromNonExistentUserId() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
         Long maxUserId = 0L;
         for (User user : users) if (user.getId() > maxUserId) maxUserId = user.getId();
 
@@ -407,9 +383,6 @@ public class OrderIntegrationTest {
 
     @Test
     public void deleteOrderByIdIsWorking() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest1 = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
@@ -461,14 +434,10 @@ public class OrderIntegrationTest {
 
     @Test
     public void cantDeleteOrderWithNonExistentId() throws Exception {
-        List<User> users = (List<User>) userService.getAll();
-        List<Book> books = (List<Book>) bookService.getAll();
-
         OrderRequest orderRequest = new OrderRequestBuilder()
                 .setUserId(users.get(0).getId())
                 .addBook(books.get(0).getId(), 1)
                 .build();
-
 
         MvcResult result = mvc.perform(
                 post("/api/orders")
@@ -479,6 +448,7 @@ public class OrderIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
+        // to get created order id
         OrderView orderView = mvcResultToClass(result, OrderView.class);
 
         mvc.perform(delete("/api/orders/" + orderView.getOrderId() + 1)
@@ -496,5 +466,49 @@ public class OrderIntegrationTest {
                         "$[0].orderId",
                         is(orderView.getOrderId().intValue())
                 ));
+    }
+
+    @Test
+    public void cantDeleteUserWhoHasAnOrder() throws Exception {
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+        mvc.perform(post("/api/orders")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .content(gson.toJson(orderRequest))
+        )
+                .andExpect(status().isCreated());
+
+        try {
+            userService.deleteById(users.get(0).getId());
+            fail();
+        } catch (Exception e) {
+            assertThat(e.getMessage(), containsString("could not execute statement"));
+        }
+    }
+
+    @Test
+    public void cantDeleteBookWhichIsInTheOrder() throws Exception {
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+        mvc.perform(post("/api/orders")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                .content(gson.toJson(orderRequest))
+        )
+                .andExpect(status().isCreated());
+
+        try {
+            bookService.deleteById(books.get(0).getId());
+            fail();
+        } catch (Exception e) {
+            assertThat(e.getMessage(), containsString("could not execute statement"));
+        }
     }
 }

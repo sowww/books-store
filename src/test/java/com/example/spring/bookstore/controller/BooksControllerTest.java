@@ -17,10 +17,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -50,7 +50,7 @@ public class BooksControllerTest {
 
     @Test
     public void getBookReturnBook() throws Exception {
-        when(bookService.getById(1L)).thenReturn(java.util.Optional.ofNullable(book1));
+        when(bookService.getById(1L)).thenReturn(ofNullable(book1));
         mvc.perform(get("/api/books/1").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is(book1.getName())))
@@ -96,7 +96,7 @@ public class BooksControllerTest {
 
     @Test
     public void createBookReturnIsCreated() throws Exception {
-        @Valid BookRequest bookRequest = new BookRequest("Book 1", 150.0, 5);
+        BookRequest bookRequest = new BookRequest("Book 1", 150.0, 5);
         Book book = new Book("Book 1", 150.0, 5);
         when(bookService.addBook(any())).thenReturn(book);
         mvc.perform(post("/api/books")
@@ -112,7 +112,6 @@ public class BooksControllerTest {
 
     @Test
     public void creatingBookWithNonValidRequestsReturnBadRequest() throws Exception {
-
         List<BookRequest> bookRequestList = new ArrayList<>();
         bookRequestList.add(new BookRequest("%&Book 1", 150D, 5));
         bookRequestList.add(new BookRequest("Book 1", 150D, -5));
