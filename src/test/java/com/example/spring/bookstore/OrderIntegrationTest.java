@@ -33,8 +33,7 @@ import java.util.Set;
 import static com.example.spring.bookstore.util.MvcUtils.mvcResultToClass;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -404,5 +403,98 @@ public class OrderIntegrationTest {
                 .accept(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deleteOrderByIdIsWorking() throws Exception {
+        List<User> users = (List<User>) userService.getAll();
+        List<Book> books = (List<Book>) bookService.getAll();
+
+        OrderRequest orderRequest1 = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+        OrderRequest orderRequest2 = new OrderRequestBuilder()
+                .setUserId(users.get(1).getId())
+                .addBook(books.get(1).getId(), 2)
+                .build();
+
+        MvcResult result1 = mvc.perform(
+                post("/api/orders")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                        .content(gson.toJson(orderRequest1))
+        )
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        MvcResult result2 = mvc.perform(
+                post("/api/orders")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                        .content(gson.toJson(orderRequest2))
+        )
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        OrderView orderViewFromRequest1 = mvcResultToClass(result1, OrderView.class);
+        OrderView orderViewFromRequest2 = mvcResultToClass(result2, OrderView.class);
+
+        mvc.perform(delete("/api/orders/" + orderViewFromRequest2.getOrderId())
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/orders").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath(
+                        "$[0].orderId",
+                        is(orderViewFromRequest1.getOrderId().intValue())
+                ))
+                .andExpect(jsonPath(
+                        "$[0].books[0].bookId",
+                        is(books.get(0).getId().intValue())
+                ));
+    }
+
+    @Test
+    public void cantDeleteOrderWithNonExistentId() throws Exception {
+        List<User> users = (List<User>) userService.getAll();
+        List<Book> books = (List<Book>) bookService.getAll();
+
+        OrderRequest orderRequest = new OrderRequestBuilder()
+                .setUserId(users.get(0).getId())
+                .addBook(books.get(0).getId(), 1)
+                .build();
+
+
+        MvcResult result = mvc.perform(
+                post("/api/orders")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+                        .content(gson.toJson(orderRequest))
+        )
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        OrderView orderView = mvcResultToClass(result, OrderView.class);
+
+        mvc.perform(delete("/api/orders/" + orderView.getOrderId() + 1)
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isNotFound());
+
+        // Checking if our created order wasn't deleted
+        mvc.perform(get("/api/orders")
+                .accept(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath(
+                        "$[0].orderId",
+                        is(orderView.getOrderId().intValue())
+                ));
     }
 }

@@ -23,9 +23,9 @@ public class BookService {
 
 
     /**
-     * Fills BooksRepository with dummy books
+     * Fills BooksRepository with ten dummy books
      */
-    public void fillBooksRepository() {
+    public Iterable<Book> fillBooksRepository() {
         log.info("fillBooksRepository()");
         for (int i = 1; i <= 10; i++) {
 
@@ -37,6 +37,7 @@ public class BookService {
             bookRepository.save(book);
             log.info("Book id: {} name: '{}' price: {} count: {}", book.getId(), bookName, price, count);
         }
+        return bookRepository.findAll();
     }
 
     public Book addBook(@Valid BookRequest bookRequest) {

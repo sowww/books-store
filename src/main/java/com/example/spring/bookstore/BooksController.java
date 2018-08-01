@@ -45,6 +45,18 @@ public class BooksController {
         return new ResponseEntity<>(bookService.addBook(bookRequest), HttpStatus.CREATED);
     }
 
+
+    /**
+     * Filling book table with ten dummy books
+     * <p>example: POST /api/books/fill</p>
+     *
+     * @return all books response
+     */
+    @PostMapping(value = "/fill")
+    public ResponseEntity<Object> fillBookRepository() {
+        return new ResponseEntity<>(bookService.fillBooksRepository(), HttpStatus.CREATED);
+    }
+
     /**
      * Getting all books
      * <p>example: GET /api/books</p>
@@ -94,5 +106,4 @@ public class BooksController {
             return ResponseEntity.notFound().build();
         }
     }
-
 }

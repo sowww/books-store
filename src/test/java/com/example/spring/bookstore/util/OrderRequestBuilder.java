@@ -14,11 +14,6 @@ public class OrderRequestBuilder {
         this.bookItems = new HashSet<>();
     }
 
-    public OrderRequestBuilder(Long userId) {
-        this.userId = userId;
-        this.bookItems = new HashSet<>();
-    }
-
     public OrderRequestBuilder setUserId(Long userId) {
         this.userId = userId;
         return this;

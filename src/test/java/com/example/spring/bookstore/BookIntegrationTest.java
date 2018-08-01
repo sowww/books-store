@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.example.spring.bookstore.util.MvcUtils.mvcResultToClass;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -64,15 +66,6 @@ public class BookIntegrationTest {
     @Before
     public void resetBookRepo() {
         clearAndFillBookRepo();
-    }
-
-    @Test
-    public void contextLoads() {
-    }
-
-    @Test
-    public void applicationContextTest() {
-        BookStoreApplication.main(new String[]{});
     }
 
     @Test
@@ -176,12 +169,10 @@ public class BookIntegrationTest {
     }
 
     @Test
-    public void fillBooksRepoAddTenBooks() {
+    public void fillBooksRepoAddTenBooks() throws Exception {
         bookService.deleteAll();
-        bookService.fillBooksRepository();
-        Assert.assertEquals(
-                bookService.getAll().spliterator().getExactSizeIfKnown(),
-                10
-        );
+        mvc.perform(post("/api/books/fill").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$", hasSize(10)));
     }
 }

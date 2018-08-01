@@ -133,6 +133,8 @@ public class OrdersController {
             return ResponseEntity.noContent().build();
         } catch (OrderNotExistException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return new ResponseEntity<>("Book from order doesn't exists", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

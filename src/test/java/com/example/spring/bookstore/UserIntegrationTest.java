@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.spring.bookstore.util.MvcUtils.mvcResultToClass;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -102,5 +104,13 @@ public class UserIntegrationTest {
                 userService.getAll().spliterator().getExactSizeIfKnown(),
                 3
         );
+    }
+
+    @Test
+    public void fillBooksRepoAddTenBooks() throws Exception {
+        userService.deleteAll();
+        mvc.perform(post("/api/users/fill").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$", hasSize(3)));
     }
 }

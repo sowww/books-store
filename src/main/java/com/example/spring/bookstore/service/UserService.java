@@ -21,7 +21,7 @@ public class UserService {
     }
 
     // Fills usersRepository with dummy users
-    public void fillUsersRepository() {
+    public Iterable<User> fillUsersRepository() {
         final String[] names = {
                 "Yuri",
                 "Ivan",
@@ -36,6 +36,7 @@ public class UserService {
                 log.info("User added: id={}, name={}", user.getId(), user.getName());
             }
         }
+        return userRepository.findAll();
     }
 
     public Iterable<User> getAll() {

@@ -4,7 +4,6 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -44,10 +43,6 @@ public class Order {
         return orderId;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
-
     public User getUser() {
         return user;
     }
@@ -78,22 +73,6 @@ public class Order {
 
     public void setStatus(Status status) {
         this.status = status;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Order order = (Order) o;
-        return Double.compare(order.totalPayment, totalPayment) == 0 &&
-                Objects.equals(orderId, order.orderId) &&
-                Objects.equals(user, order.user) &&
-                status == order.status;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(orderId, user, totalPayment, status);
     }
 
     public enum Status {

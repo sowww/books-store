@@ -210,7 +210,7 @@ public class OrderService {
      * @throws OrderNotExistException
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public void deleteById(Long id) throws OrderNotExistException {
+    public void deleteById(Long id) throws Exception {
         if (orderRepository.existsById(id)) {
             Order order = orderRepository.findById(id).get();
             Set<OrderItem> orderItems = order.getOrderItems();
@@ -231,6 +231,7 @@ public class OrderService {
                     );
                 } else {
                     log.info("Book {} doesn't exist", bookId);
+                    throw new Exception("Book doesn't exist!");
                 }
             }
             // After returning the books
