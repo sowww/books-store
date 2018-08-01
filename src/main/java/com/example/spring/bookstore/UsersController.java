@@ -30,7 +30,7 @@ public class UsersController {
 
     /**
      * Filling user table with three dummy users
-     * <p>example: GET /api/users/1</p></>
+     * <p>example: POST /api/users</p></>
      *
      * @return all users response
      */
