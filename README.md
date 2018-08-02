@@ -5,7 +5,7 @@ Spring REST API Service.
 1. Clone project from GitHub
 1. Import libraries with gradle
 1. Install postgreSQL 9+
-1. Create new user:  
+1. Create new user with **login privilege**:  
    ```
    Username: user  
    Password: user
