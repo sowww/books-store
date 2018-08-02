@@ -1,0 +1,72 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+    <changeSet author="yuri.kulikov" id="2018-08-02--01-initial-schema-import-1">
+        <createSequence sequenceName="hibernate_sequence"/>
+    </changeSet>
+    <changeSet author="yuri.kulikov" id="2018-08-02--01-initial-schema-import-2">
+        <createTable tableName="books">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="books_pkey"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="price" type="FLOAT8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="yuri.kulikov" id="2018-08-02--01-initial-schema-import-3">
+        <createTable tableName="order_item">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="order_item_pkey"/>
+            </column>
+            <column name="quantity" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="book_id" type="BIGINT"/>
+            <column name="order_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="yuri.kulikov" id="2018-08-02--01-initial-schema-import-4">
+        <createTable tableName="orders">
+            <column name="order_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="orders_pkey"/>
+            </column>
+            <column name="status" type="INTEGER"/>
+            <column name="total_payment" type="FLOAT8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="yuri.kulikov" id="2018-08-02--01-initial-schema-import-5">
+        <createTable tableName="users">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="users_pkey"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="yuri.kulikov" id="2018-08-02--01-initial-schema-import-6">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="orders"
+                                 constraintName="order_user_id" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="users" validate="true"/>
+    </changeSet>
+    <changeSet author="yuri.kulikov" id="2018-08-02--01-initial-schema-import-7">
+        <addForeignKeyConstraint baseColumnNames="book_id" baseTableName="order_item"
+                                 constraintName="order_item_book_id" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="id" referencedTableName="books" validate="true"/>
+    </changeSet>
+    <changeSet author="yuri.kulikov" id="2018-08-02--01-initial-schema-import-8">
+        <addForeignKeyConstraint baseColumnNames="order_id" baseTableName="order_item"
+                                 constraintName="order_item_order_id" deferrable="false"
+                                 initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION"
+                                 referencedColumnNames="order_id" referencedTableName="orders" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
